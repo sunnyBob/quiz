@@ -23,10 +23,10 @@ enhance-quiz-system/
 
 ## Key Features
 
-### 1. Intelligent Anti-Cheat System
-- **Behavior Monitoring**: Continuous tracking of user interactions
-- **Risk Assessment**: Real-time scoring and threat detection
-- **Pattern Analysis**: Machine learning-based anomaly detection
+### 1. Basic Anti-Cheat System
+- **Copy Prevention**: Disable text selection and right-click menu
+- **Screenshot Discouragement**: Watermark overlay system
+- **Keyboard Restrictions**: Block common shortcuts (Ctrl+C, F12, etc.)
 - **Administrative Tools**: Comprehensive monitoring dashboard
 
 ### 2. Advanced Time Control
@@ -50,12 +50,12 @@ enhance-quiz-system/
 ## Implementation Phases
 
 ### Phase 1: Database Schema Enhancement (Tasks 1.1-1.5)
-- New tables for behavior logging and risk assessment
 - Enhanced existing tables for progress tracking
 - Configuration tables for exam settings
+- Basic anti-cheat configuration fields
 
 ### Phase 2: Core System Implementation (Tasks 2.1-5.5)
-- Anti-cheat monitoring system
+- Basic anti-cheat restrictions (CSS/JS)
 - Time control and synchronization
 - Progress tracking infrastructure
 - Enhanced result analysis engine

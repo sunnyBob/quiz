@@ -1,43 +1,48 @@
-# Anti-Cheat System Specification
+# Basic Anti-Cheat System Specification
 
 ## ADDED Requirements
 
-### Requirement: Behavior Monitoring
-The system SHALL continuously monitor user behavior during quiz sessions to detect potential cheating attempts.
+### Requirement: Copy Prevention
+The system SHALL prevent users from copying quiz content through standard methods.
 
-#### Scenario: Window focus tracking
-- **WHEN** user switches away from quiz window
-- **THEN** system records focus loss event with timestamp
-- **AND** increments risk score based on frequency and duration
+#### Scenario: Text selection disabled
+- **WHEN** user attempts to select text on quiz page
+- **THEN** system prevents text selection using CSS user-select: none
+- **AND** maintains normal quiz functionality
 
-#### Scenario: Typing pattern analysis
-- **WHEN** user answers questions
-- **THEN** system analyzes typing speed and patterns
-- **AND** flags unusually fast or robotic input patterns
+#### Scenario: Right-click menu disabled
+- **WHEN** user right-clicks on quiz content
+- **THEN** system prevents context menu from appearing
+- **AND** blocks access to copy/inspect options
 
-### Requirement: Risk Assessment
-The system SHALL calculate real-time risk scores based on behavioral patterns and trigger appropriate responses.
+#### Scenario: Keyboard shortcuts blocked
+- **WHEN** user presses Ctrl+C, Ctrl+A, Ctrl+S, F12, or other restricted keys
+- **THEN** system prevents default browser behavior
+- **AND** maintains quiz interaction capabilities
 
-#### Scenario: Low risk behavior
-- **WHEN** user exhibits normal quiz-taking patterns
-- **THEN** system maintains baseline risk score
-- **AND** continues normal monitoring
+### Requirement: Screenshot Prevention
+The system SHALL implement basic measures to discourage screenshot capture.
 
-#### Scenario: High risk detection
-- **WHEN** multiple suspicious behaviors are detected
-- **THEN** system escalates risk score above threshold
-- **AND** triggers admin notification
-- **AND** may flag exam for manual review
+#### Scenario: Watermark display
+- **WHEN** quiz is active
+- **THEN** system displays semi-transparent watermark with user ID
+- **AND** positions watermark to be visible in screenshots
+- **AND** ensures watermark doesn't interfere with quiz readability
 
-### Requirement: Pattern Analysis
-The system SHALL use machine learning algorithms to identify cheating patterns and improve detection accuracy over time.
+#### Scenario: Print protection
+- **WHEN** user attempts to print quiz page
+- **THEN** system hides quiz content in print view
+- **AND** displays message indicating printing is not allowed
 
-#### Scenario: Answer timing analysis
-- **WHEN** analyzing completed quiz sessions
-- **THEN** system identifies statistical anomalies in answer timing
-- **AND** updates detection models with new patterns
+### Requirement: Basic Security Measures
+The system SHALL implement simple client-side restrictions without complex monitoring.
 
-#### Scenario: Consistency checking
-- **WHEN** user demonstrates inconsistent knowledge levels
-- **THEN** system flags potential external assistance
-- **AND** provides detailed analysis to administrators
+#### Scenario: Developer tools prevention
+- **WHEN** user attempts to open browser developer tools
+- **THEN** system blocks common keyboard shortcuts (F12, Ctrl+Shift+I)
+- **AND** continues normal quiz operation
+
+#### Scenario: Page source protection
+- **WHEN** user attempts to view page source
+- **THEN** system blocks Ctrl+U shortcut
+- **AND** maintains quiz functionality

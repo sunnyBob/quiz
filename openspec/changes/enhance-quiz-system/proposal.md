@@ -2,16 +2,17 @@
 
 ## Why
 The current quiz system lacks advanced features needed for professional examinations:
-- No intelligent anti-cheating mechanisms
+- No basic anti-cheating mechanisms (copy/paste, screenshots)
 - Limited time control capabilities  
 - No progress tracking for users
 - Basic result display without detailed review
 
 ## What Changes
-- **ADDED**: Intelligent Anti-Cheat System
-  - Behavior pattern analysis
-  - Anomaly detection algorithms
-  - Real-time risk assessment
+- **ADDED**: Basic Anti-Cheat System
+  - Disable copy/paste functionality
+  - Prevent screenshots with watermarks
+  - Disable right-click context menu
+  - Block common keyboard shortcuts
 - **ADDED**: Advanced Time Control
   - Countdown timer with warnings
   - Auto-submit functionality

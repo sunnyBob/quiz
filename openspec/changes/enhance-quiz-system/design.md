@@ -5,12 +5,13 @@ Current quiz system provides basic functionality but lacks enterprise-grade feat
 
 ## Goals / Non-Goals
 **Goals:**
-- Implement intelligent anti-cheating with 95%+ accuracy
+- Implement basic anti-cheating (copy/paste, screenshot prevention)
 - Provide seamless time management experience
 - Enable comprehensive progress tracking
 - Deliver actionable result insights
 
 **Non-Goals:**
+- Complex behavior monitoring (too complex)
 - Biometric authentication (future consideration)
 - Video proctoring (out of scope)
 - Advanced analytics dashboard (separate change)
@@ -18,9 +19,9 @@ Current quiz system provides basic functionality but lacks enterprise-grade feat
 ## Decisions
 
 ### Anti-Cheat Architecture
-- **Decision**: Client-side monitoring with server-side analysis
-- **Rationale**: Balance between security and performance
-- **Alternatives**: Server-side only (too slow), client-side only (insecure)
+- **Decision**: Simple client-side restrictions only
+- **Rationale**: Minimal complexity while providing basic protection
+- **Alternatives**: Complex monitoring (too complex), no protection (insecure)
 
 ### Time Synchronization
 - **Decision**: NTP-style time sync with offset calculation

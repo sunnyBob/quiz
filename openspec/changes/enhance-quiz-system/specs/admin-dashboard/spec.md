@@ -2,26 +2,20 @@
 
 ## ADDED Requirements
 
-### Requirement: Anti-Cheat Management
-The admin dashboard SHALL provide comprehensive tools for monitoring and managing anti-cheat systems.
+### Requirement: Basic Anti-Cheat Configuration
+The admin dashboard SHALL provide simple configuration options for basic anti-cheat features.
 
-#### Scenario: Risk monitoring dashboard
-- **WHEN** admin accesses anti-cheat dashboard
-- **THEN** system displays real-time risk scores for active sessions
-- **AND** shows historical risk patterns and trends
-- **AND** provides filtering and search capabilities
+#### Scenario: Anti-cheat settings
+- **WHEN** admin configures exam security settings
+- **THEN** system allows enabling/disabling copy prevention
+- **AND** allows configuring watermark text and opacity
+- **AND** provides options for keyboard shortcut restrictions
 
-#### Scenario: Behavior analysis
-- **WHEN** admin reviews suspicious activity
-- **THEN** system displays detailed behavior logs and patterns
-- **AND** shows risk score calculations and contributing factors
-- **AND** provides recommendations for intervention
-
-#### Scenario: Rule configuration
-- **WHEN** admin configures anti-cheat rules
-- **THEN** system allows setting risk thresholds and responses
-- **AND** enables/disables specific monitoring features
-- **AND** validates rule consistency and effectiveness
+#### Scenario: Security status display
+- **WHEN** admin views exam details
+- **THEN** system shows which anti-cheat features are enabled
+- **AND** displays simple security status indicators
+- **AND** provides basic usage statistics
 
 ### Requirement: Advanced Time Control
 The admin dashboard SHALL enable sophisticated time management for examinations.
