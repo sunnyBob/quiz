@@ -31,12 +31,16 @@ const initDb = async () => {
 
   const connection = await pool.getConnection();
   try {
-    // Users table (Simple name storage for now, can be expanded)
+    // Users table - Users are scoped to specific exams
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        exam_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_user_per_exam (name, exam_id),
+        INDEX idx_users_exam_id (exam_id),
+        INDEX idx_users_name (name)
       )
     `);
 
@@ -48,9 +52,23 @@ const initDb = async () => {
         description TEXT,
         created_by INT,
         share_link_id VARCHAR(100) UNIQUE,
+        language VARCHAR(10) DEFAULT 'zh-CN', -- Exam content language (zh-CN, en-US)
+        time_limit_minutes INT DEFAULT 0, -- 0 means no time limit
+        enable_copy_prevention BOOLEAN DEFAULT TRUE,
+        enable_watermark BOOLEAN DEFAULT TRUE,
+        watermark_text VARCHAR(255) DEFAULT 'Exam in Progress',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Add foreign key constraint to users table after exams table is created
+    await connection.query(`
+      ALTER TABLE users
+      ADD CONSTRAINT fk_users_exam
+      FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
+    `).catch(() => {
+      // Ignore error if constraint already exists
+    });
 
     // Questions table
     await connection.query(`
@@ -76,7 +94,10 @@ const initDb = async () => {
         score INT DEFAULT 0,
         total_questions INT DEFAULT 0,
         total_duration INT DEFAULT 0, -- Total time in seconds
-        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        current_question_index INT DEFAULT 0, -- Progress tracking
+        status ENUM('in_progress', 'completed', 'expired') DEFAULT 'in_progress',
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMP NULL,
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (exam_id) REFERENCES exams(id)
       )
@@ -91,9 +112,27 @@ const initDb = async () => {
         user_answer VARCHAR(255),
         is_correct BOOLEAN,
         duration_seconds INT DEFAULT 0, -- Time spent on this specific question
+        question_order INT DEFAULT 0, -- Order in which question was answered
+        status ENUM('answered', 'skipped', 'flagged') DEFAULT 'answered',
         answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (result_id) REFERENCES results(id) ON DELETE CASCADE,
         FOREIGN KEY (question_id) REFERENCES questions(id)
+      )
+    `);
+
+    // Question progress table for navigation state
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS question_progress (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        result_id INT NOT NULL,
+        question_id INT NOT NULL,
+        status ENUM('not_visited', 'visited', 'answered', 'skipped', 'flagged') DEFAULT 'not_visited',
+        visit_count INT DEFAULT 0,
+        time_spent INT DEFAULT 0, -- Total time spent on this question
+        last_visited TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (result_id) REFERENCES results(id) ON DELETE CASCADE,
+        FOREIGN KEY (question_id) REFERENCES questions(id),
+        UNIQUE KEY unique_result_question (result_id, question_id)
       )
     `);
 

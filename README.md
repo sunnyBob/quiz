@@ -73,9 +73,18 @@ npm run dev
 ✅ State recovery on page refresh
 ✅ Time tracking (per question + total)
 ✅ Anti-cheating (no copy/select, watermark)
-✅ Bilingual support (EN/ZH) - i18n configured
+✅ Bilingual support (EN/ZH) with browser language detection
 ✅ Admin dashboard with statistics
 ✅ Exam creation and management
+
+### Language Support
+- **Automatic Detection**: System automatically detects browser language and displays Chinese or English interface
+- **Manual Switching**: Users can manually switch language using the language switcher in the top-right corner
+- **Preference Saving**: Selected language is saved to localStorage for future visits
+- **Supported Languages**: Chinese (zh-CN), English (en-US)
+- **Priority**: User preference > Browser language > Default (Chinese)
+
+For more details, see [Browser Language Detection Documentation](./BROWSER_LANGUAGE_DETECTION.md)
 
 ## Next Steps
 

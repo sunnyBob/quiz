@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
+import { apiUrls } from '../config/api';
 
 interface ResultStat {
   id: number;
@@ -11,18 +12,57 @@ interface ResultStat {
   completed_at: string;
 }
 
+interface Exam {
+  id: number;
+  title: string;
+  description: string;
+  share_link_id: string;
+}
+
 const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<ResultStat[]>([]);
-  const [examId, setExamId] = useState('1');
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingExams, setLoadingExams] = useState(true);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const fetchExams = async () => {
+    setLoadingExams(true);
+    try {
+      const res = await axios.get(apiUrls.getAllExams());
+      const examList = res.data;
+      setExams(examList);
+      
+      // 检查URL参数中是否指定了考卷ID
+      const examIdFromUrl = searchParams.get('examId');
+      if (examIdFromUrl) {
+        const targetExam = examList.find((ex: Exam) => ex.id === Number(examIdFromUrl));
+        if (targetExam) {
+          setSelectedExam(targetExam);
+          return;
+        }
+      }
+      
+      // 自动选择第一个考卷（如果有）
+      if (examList.length > 0) {
+        setSelectedExam(examList[0]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch exams", err);
+      setExams([]);
+    } finally {
+      setLoadingExams(false);
+    }
+  };
 
   const fetchStats = async () => {
-    if (!examId.trim()) return;
+    if (!selectedExam) return;
 
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:3000/api/admin/exams/${examId}/stats`);
+      const res = await axios.get(apiUrls.getExamStats(selectedExam.id));
       setStats(res.data);
     } catch (err) {
       console.error("Failed to fetch stats", err);
@@ -33,8 +73,14 @@ const DashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchStats();
-  }, [examId]);
+    fetchExams();
+  }, []);
+
+  useEffect(() => {
+    if (selectedExam) {
+      fetchStats();
+    }
+  }, [selectedExam]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -81,6 +127,15 @@ const DashboardPage: React.FC = () => {
 
             <div className="flex items-center space-x-4">
               <button
+                onClick={() => navigate('/admin/manage')}
+                className="btn-secondary"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                考卷管理
+              </button>
+              <button
                 onClick={() => navigate('/admin/create')}
                 className="btn-primary"
               >
@@ -106,24 +161,72 @@ const DashboardPage: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Exam Selector */}
         <div className="mb-8">
-          <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">
-              选择考卷ID:
-            </label>
-            <input
-              type="text"
-              value={examId}
-              onChange={(e) => setExamId(e.target.value)}
-              className="input-field w-32"
-              placeholder="输入ID"
-            />
-            <button
-              onClick={fetchStats}
-              disabled={loading}
-              className="btn-primary"
-            >
-              {loading ? '加载中...' : '查询'}
-            </button>
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  选择考卷
+                </label>
+                {loadingExams ? (
+                  <div className="flex items-center text-gray-500">
+                    <svg className="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    加载考卷列表...
+                  </div>
+                ) : exams.length === 0 ? (
+                  <div className="text-gray-500">
+                    暂无考卷，请先创建考卷
+                  </div>
+                ) : (
+                  <select
+                    value={selectedExam?.id || ''}
+                    onChange={(e) => {
+                      const exam = exams.find(ex => ex.id === Number(e.target.value));
+                      setSelectedExam(exam || null);
+                    }}
+                    className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {exams.map(exam => (
+                      <option key={exam.id} value={exam.id}>
+                        {exam.title} (ID: {exam.id})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              
+              {selectedExam && (
+                <div className="ml-4 flex items-center space-x-2">
+                  <button
+                    onClick={() => navigate(`/admin/exams/${selectedExam.id}/records`)}
+                    className="btn-secondary flex items-center space-x-2"
+                    title="查看详细考试记录"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>查看详细记录</span>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/admin/exams/${selectedExam.id}/questions`)}
+                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="管理题目"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {selectedExam && (
+              <div className="mt-3 text-sm text-gray-600">
+                {selectedExam.description || '暂无描述'}
+              </div>
+            )}
           </div>
         </div>
 
@@ -198,21 +301,40 @@ const DashboardPage: React.FC = () => {
         <div className="card">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">详细成绩</h3>
-            <div className="text-sm text-gray-500">
-              考卷ID: {examId}
-            </div>
+            {selectedExam && (
+              <div className="text-sm text-gray-500">
+                {selectedExam.title} (ID: {selectedExam.id})
+              </div>
+            )}
           </div>
 
-          {loading ? (
+          {loadingExams ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">加载中...</p>
+              <p className="text-gray-600">加载考卷列表...</p>
+            </div>
+          ) : !selectedExam ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📋</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">暂无考卷</h3>
+              <p className="text-gray-600">请先创建考卷</p>
+              <button
+                onClick={() => navigate('/admin/create')}
+                className="btn-primary mt-4"
+              >
+                创建考卷
+              </button>
+            </div>
+          ) : loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">加载统计数据...</p>
             </div>
           ) : stats.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📊</div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">暂无数据</h3>
-              <p className="text-gray-600">该考卷还没有人参加，或考卷ID不存在</p>
+              <p className="text-gray-600">该考卷还没有人参加</p>
             </div>
           ) : (
             <div className="overflow-x-auto">

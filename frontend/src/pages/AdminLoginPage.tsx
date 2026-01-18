@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import NotificationContainer from '../components/NotificationContainer';
+import { useNotification } from '../hooks/useNotification';
 
 const AdminLoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { notifications, removeNotification, showError } = useNotification();
 
   const handleLogin = async () => {
     setIsLoading(true);
     // Simulate loading
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (password === 'admin123') {
+    // 从环境变量读取管理员密码，如果没有设置则使用默认值
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
+    
+    if (password === adminPassword) {
       localStorage.setItem('admin_auth', 'true');
       navigate('/admin/dashboard');
     } else {
-      alert('密码错误，请重试');
+      showError('密码错误，请重试');
     }
     setIsLoading(false);
   };
@@ -77,11 +83,15 @@ const AdminLoginPage: React.FC = () => {
 
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500 text-center">
-              默认密码: <code className="bg-gray-100 px-2 py-1 rounded text-xs">admin123</code>
+              首次使用请设置环境变量 <code className="bg-gray-100 px-2 py-1 rounded text-xs">VITE_ADMIN_PASSWORD</code>
             </p>
           </div>
         </div>
       </div>
+      <NotificationContainer 
+        notifications={notifications} 
+        onRemove={removeNotification} 
+      />
     </div>
   );
 };

@@ -1,0 +1,346 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+// Translation resources
+const resources = {
+  'zh-CN': {
+    translation: {
+      // Common
+      'common.loading': '加载中...',
+      'common.submit': '提交',
+      'common.cancel': '取消',
+      'common.confirm': '确认',
+      'common.delete': '删除',
+      'common.edit': '编辑',
+      'common.save': '保存',
+      'common.back': '返回',
+      'common.next': '下一题',
+      'common.previous': '上一题',
+      'common.close': '关闭',
+      'common.search': '搜索',
+      'common.create': '创建',
+      'common.copy': '复制',
+      
+      // Landing Page
+      'landing.title': '考试系统',
+      'landing.subtitle': '请输入您的姓名开始考试',
+      'landing.nameLabel': '您的姓名',
+      'landing.namePlaceholder': '请输入姓名',
+      'landing.examIdLabel': '考卷ID（分享码）',
+      'landing.examIdPlaceholder': '请输入考卷ID',
+      'landing.examIdRequired': '请输入由考试管理员提供的考卷ID',
+      'landing.autoFilledFromLink': '已通过分享链接自动填充',
+      'landing.startExam': '开始考试',
+      'landing.nameRequired': '请输入姓名',
+      'landing.examNotFound': '考卷未找到',
+      'landing.loadingExam': '加载考卷中...',
+      'landing.examCompleted': '您已完成该考试，不能重复参加',
+      'landing.examExpired': '考试时间已到',
+      'landing.nameExists': '用户名已存在，请使用其他名称',
+      'landing.startFailed': '启动考试失败，请检查网络连接或重试',
+      'landing.foundExam': '试题：{{title}}',
+      'landing.timeLimit': '限时：{{minutes}} 分钟',
+      
+      // Exam Guidelines Dialog
+      'guidelines.title': '考前须知',
+      'guidelines.importantNotice': '重要提示',
+      'guidelines.timeLimit': '⚠️ 本次考试限时',
+      'guidelines.examTime': '考试时间',
+      'guidelines.timeLimitDesc': '您有 {{minutes}} 分钟完成本次考试',
+      'guidelines.timeLimitTip': '💡 建议：开始前请确保您有完整的 {{minutes}} 分钟不受打扰的时间，计时一旦开始将无法暂停。',
+      'guidelines.rule1.title': '⏱️ 计时自动开始且无法暂停',
+      'guidelines.rule1.desc1': '点击"我知道了"后，考试计时将立即开始并持续计时，无法暂停或重置。',
+      'guidelines.rule1.desc2': '⚠️ 请确保您有充足的时间完成考试，避免中途因其他事务而影响答题。',
+      'guidelines.rule1.desc3': '注意：即使离开页面、刷新浏览器或关闭窗口，计时也会继续进行。',
+      'guidelines.rule2.title': '⏰ 超时自动提交',
+      'guidelines.rule2.desc': '考试时间结束后，系统将自动提交答卷。建议提前完成，避免未作答的题目。',
+      'guidelines.rule3.title': '🚩 题目标记功能',
+      'guidelines.rule3.desc': '可以标记暂时跳过的题目，稍后返回作答。标记不影响成绩，仅供个人参考。',
+      'guidelines.rule4.title': '✏️ 答题限制',
+      'guidelines.rule4.desc': '每道题目只能作答一次，作答后无法修改。请仔细审题后再选择答案。',
+      'guidelines.rule5.title': '🔄 中断恢复',
+      'guidelines.rule5.desc': '如遇特殊原因中断，在考试结束前可重新输入相同姓名继续答题。已作答的题目和剩余时间将保留。',
+      'guidelines.rule6.title': '📊 完成后查看',
+      'guidelines.rule6.desc': '提交答卷后可立即查看成绩、排行榜，并回顾所有题目的正确答案和解析。',
+      'guidelines.cancel': '取消',
+      'guidelines.confirm': '我知道了，开始考试',
+      
+      // Quiz Page
+      'quiz.question': '题目',
+      'quiz.of': '/',
+      'quiz.timeRemaining': '剩余时间',
+      'quiz.submitExam': '提交考卷',
+      'quiz.confirmSubmit': '确认提交',
+      'quiz.confirmSubmitMessage': '您确定要提交考卷吗？提交后无法修改答案。',
+      'quiz.correctAnswer': '正确答案',
+      'quiz.yourAnswer': '您的答案',
+      'quiz.explanation': '解析',
+      'quiz.correct': '正确',
+      'quiz.incorrect': '错误',
+      'quiz.choice': '选择题',
+      'quiz.trueFalse': '判断题',
+      
+      // Summary Page
+      'summary.title': '考试结果',
+      'summary.score': '得分',
+      'summary.totalQuestions': '总题数',
+      'summary.correctAnswers': '正确答案数',
+      'summary.duration': '用时',
+      'summary.minutes': '分钟',
+      'summary.seconds': '秒',
+      'summary.reviewAnswers': '查看答案解析',
+      'summary.backToHome': '返回首页',
+      
+      // Admin Login
+      'admin.login.title': '管理员登录',
+      'admin.login.username': '用户名',
+      'admin.login.password': '密码',
+      'admin.login.loginButton': '登录',
+      'admin.login.usernameRequired': '请输入用户名',
+      'admin.login.passwordRequired': '请输入密码',
+      'admin.login.loginFailed': '登录失败',
+      
+      // Dashboard
+      'dashboard.title': '考试管理系统',
+      'dashboard.createExam': '创建考卷',
+      'dashboard.examManagement': '考卷管理',
+      'dashboard.logout': '退出登录',
+      'dashboard.examList': '考卷列表',
+      'dashboard.examTitle': '考卷标题',
+      'dashboard.shareLink': '分享链接',
+      'dashboard.createdAt': '创建时间',
+      'dashboard.actions': '操作',
+      'dashboard.noExams': '暂无考卷',
+      'dashboard.searchPlaceholder': '搜索考卷标题...',
+      
+      // Exam Editor
+      'examEditor.title': '创建新考卷',
+      'examEditor.subtitle': '填写考卷基本信息，创建后可添加题目',
+      'examEditor.examTitle': '考卷标题',
+      'examEditor.examTitlePlaceholder': '请输入考卷标题，如：JavaScript基础知识测试',
+      'examEditor.examDescription': '考卷描述',
+      'examEditor.examDescriptionPlaceholder': '请输入考卷描述，如：本测试包含JavaScript基础语法、DOM操作等内容',
+      'examEditor.examLanguage': '考卷语言',
+      'examEditor.languageChinese': '中文',
+      'examEditor.languageEnglish': '英文',
+      'examEditor.timeLimit': '考试时间限制',
+      'examEditor.noLimit': '无限制',
+      'examEditor.customTime': '自定义',
+      'examEditor.minutes': '分钟',
+      'examEditor.createExam': '创建考卷',
+      'examEditor.creating': '创建中...',
+      'examEditor.createSuccess': '考卷创建成功！',
+      'examEditor.createFailed': '创建考卷失败，请重试',
+      'examEditor.viewStats': '查看统计',
+      
+      // Question Management
+      'questionMgmt.title': '题目管理',
+      'questionMgmt.addQuestion': '添加题目',
+      'questionMgmt.batchImport': '批量导入',
+      'questionMgmt.questionList': '题目列表',
+      'questionMgmt.questionType': '题型',
+      'questionMgmt.questionContent': '题目内容',
+      'questionMgmt.noQuestions': '暂无题目',
+      'questionMgmt.deleteQuestion': '删除题目',
+      'questionMgmt.deleteConfirm': '确定要删除这道题目吗？',
+      
+      // Exam Management
+      'examMgmt.title': '考卷管理',
+      'examMgmt.editExam': '编辑考卷',
+      'examMgmt.deleteExam': '删除考卷',
+      'examMgmt.deleteConfirm': '确定要删除这张考卷吗？删除后无法恢复。',
+      'examMgmt.copyLink': '复制链接',
+      'examMgmt.linkCopied': '链接已复制',
+      'examMgmt.manageQuestions': '管理题目',
+      'examMgmt.viewRecords': '查看答卷',
+      'examMgmt.language': '语言',
+    }
+  },
+  'en-US': {
+    translation: {
+      // Common
+      'common.loading': 'Loading...',
+      'common.submit': 'Submit',
+      'common.cancel': 'Cancel',
+      'common.confirm': 'Confirm',
+      'common.delete': 'Delete',
+      'common.edit': 'Edit',
+      'common.save': 'Save',
+      'common.back': 'Back',
+      'common.next': 'Next',
+      'common.previous': 'Previous',
+      'common.close': 'Close',
+      'common.search': 'Search',
+      'common.create': 'Create',
+      'common.copy': 'Copy',
+      
+      // Landing Page
+      'landing.title': 'Exam System',
+      'landing.subtitle': 'Enter your name to start the exam',
+      'landing.nameLabel': 'Your Name',
+      'landing.namePlaceholder': 'Enter your name',
+      'landing.examIdLabel': 'Exam ID (Share Code)',
+      'landing.examIdPlaceholder': 'Enter exam ID',
+      'landing.examIdRequired': 'Please enter the exam ID provided by the administrator',
+      'landing.autoFilledFromLink': 'Auto-filled from share link',
+      'landing.startExam': 'Start Exam',
+      'landing.nameRequired': 'Please enter your name',
+      'landing.examNotFound': 'Exam not found',
+      'landing.loadingExam': 'Loading exam...',
+      'landing.examCompleted': 'You have already completed this exam',
+      'landing.examExpired': 'Exam time has expired',
+      'landing.nameExists': 'Username already exists, please use another name',
+      'landing.startFailed': 'Failed to start exam, please check your network connection or try again',
+      'landing.foundExam': 'Exam: {{title}}',
+      'landing.timeLimit': 'Time Limit: {{minutes}} min',
+      
+      // Exam Guidelines Dialog
+      'guidelines.title': 'Exam Guidelines',
+      'guidelines.importantNotice': 'Important Notice',
+      'guidelines.timeLimit': '⚠️ Time Limit',
+      'guidelines.examTime': 'Exam Time',
+      'guidelines.timeLimitDesc': 'You have {{minutes}} minutes to complete this exam',
+      'guidelines.timeLimitTip': '💡 Tip: Before starting, ensure you have a full {{minutes}} minutes of uninterrupted time. The timer cannot be paused once started.',
+      'guidelines.rule1.title': '⏱️ Timer Starts Automatically and Cannot Be Paused',
+      'guidelines.rule1.desc1': 'After clicking "I Understand", the exam timer will start immediately and continue counting, cannot be paused or reset.',
+      'guidelines.rule1.desc2': '⚠️ Please ensure you have sufficient time to complete the exam. Avoid interruptions from other matters.',
+      'guidelines.rule1.desc3': 'Note: The timer continues even if you leave the page, refresh the browser, or close the window.',
+      'guidelines.rule2.title': '⏰ Auto-Submit on Timeout',
+      'guidelines.rule2.desc': 'The exam will be auto-submitted when time runs out. It\'s recommended to finish early to avoid unanswered questions.',
+      'guidelines.rule3.title': '🚩 Question Flagging',
+      'guidelines.rule3.desc': 'You can flag questions to return to later. Flagging does not affect your score and is for your reference only.',
+      'guidelines.rule4.title': '✏️ Answer Restrictions',
+      'guidelines.rule4.desc': 'Each question can only be answered once and cannot be modified after answering. Please read carefully before selecting your answer.',
+      'guidelines.rule5.title': '🔄 Resume After Interruption',
+      'guidelines.rule5.desc': 'If interrupted, you can resume the exam by re-entering the same name before the exam ends. Your answers and remaining time will be preserved.',
+      'guidelines.rule6.title': '📊 View Results After Completion',
+      'guidelines.rule6.desc': 'After submission, you can view your score, leaderboard, and review all questions with correct answers and explanations.',
+      'guidelines.cancel': 'Cancel',
+      'guidelines.confirm': 'I Understand, Start Exam',
+      
+      // Quiz Page
+      'quiz.question': 'Question',
+      'quiz.of': '/',
+      'quiz.timeRemaining': 'Time Remaining',
+      'quiz.submitExam': 'Submit Exam',
+      'quiz.confirmSubmit': 'Confirm Submission',
+      'quiz.confirmSubmitMessage': 'Are you sure you want to submit? You cannot modify your answers after submission.',
+      'quiz.correctAnswer': 'Correct Answer',
+      'quiz.yourAnswer': 'Your Answer',
+      'quiz.explanation': 'Explanation',
+      'quiz.correct': 'Correct',
+      'quiz.incorrect': 'Incorrect',
+      'quiz.choice': 'Multiple Choice',
+      'quiz.trueFalse': 'True/False',
+      
+      // Summary Page
+      'summary.title': 'Exam Results',
+      'summary.score': 'Score',
+      'summary.totalQuestions': 'Total Questions',
+      'summary.correctAnswers': 'Correct Answers',
+      'summary.duration': 'Duration',
+      'summary.minutes': 'minutes',
+      'summary.seconds': 'seconds',
+      'summary.reviewAnswers': 'Review Answers',
+      'summary.backToHome': 'Back to Home',
+      
+      // Admin Login
+      'admin.login.title': 'Admin Login',
+      'admin.login.username': 'Username',
+      'admin.login.password': 'Password',
+      'admin.login.loginButton': 'Login',
+      'admin.login.usernameRequired': 'Please enter username',
+      'admin.login.passwordRequired': 'Please enter password',
+      'admin.login.loginFailed': 'Login failed',
+      
+      // Dashboard
+      'dashboard.title': 'Exam Management System',
+      'dashboard.createExam': 'Create Exam',
+      'dashboard.examManagement': 'Exam Management',
+      'dashboard.logout': 'Logout',
+      'dashboard.examList': 'Exam List',
+      'dashboard.examTitle': 'Exam Title',
+      'dashboard.shareLink': 'Share Link',
+      'dashboard.createdAt': 'Created At',
+      'dashboard.actions': 'Actions',
+      'dashboard.noExams': 'No exams yet',
+      'dashboard.searchPlaceholder': 'Search exam title...',
+      
+      // Exam Editor
+      'examEditor.title': 'Create New Exam',
+      'examEditor.subtitle': 'Fill in exam details, then add questions',
+      'examEditor.examTitle': 'Exam Title',
+      'examEditor.examTitlePlaceholder': 'Enter exam title, e.g.: JavaScript Basics Test',
+      'examEditor.examDescription': 'Exam Description',
+      'examEditor.examDescriptionPlaceholder': 'Enter description, e.g.: This test covers JavaScript syntax, DOM operations, etc.',
+      'examEditor.examLanguage': 'Exam Language',
+      'examEditor.languageChinese': 'Chinese',
+      'examEditor.languageEnglish': 'English',
+      'examEditor.timeLimit': 'Time Limit',
+      'examEditor.noLimit': 'No Limit',
+      'examEditor.customTime': 'Custom',
+      'examEditor.minutes': 'minutes',
+      'examEditor.createExam': 'Create Exam',
+      'examEditor.creating': 'Creating...',
+      'examEditor.createSuccess': 'Exam created successfully!',
+      'examEditor.createFailed': 'Failed to create exam, please try again',
+      'examEditor.viewStats': 'View Statistics',
+      
+      // Question Management
+      'questionMgmt.title': 'Question Management',
+      'questionMgmt.addQuestion': 'Add Question',
+      'questionMgmt.batchImport': 'Batch Import',
+      'questionMgmt.questionList': 'Question List',
+      'questionMgmt.questionType': 'Type',
+      'questionMgmt.questionContent': 'Content',
+      'questionMgmt.noQuestions': 'No questions yet',
+      'questionMgmt.deleteQuestion': 'Delete Question',
+      'questionMgmt.deleteConfirm': 'Are you sure you want to delete this question?',
+      
+      // Exam Management
+      'examMgmt.title': 'Exam Management',
+      'examMgmt.editExam': 'Edit Exam',
+      'examMgmt.deleteExam': 'Delete Exam',
+      'examMgmt.deleteConfirm': 'Are you sure you want to delete this exam? This action cannot be undone.',
+      'examMgmt.copyLink': 'Copy Link',
+      'examMgmt.linkCopied': 'Link copied',
+      'examMgmt.manageQuestions': 'Manage Questions',
+      'examMgmt.viewRecords': 'View Records',
+      'examMgmt.language': 'Language',
+    }
+  }
+};
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: 'zh-CN',
+    // Remove hardcoded lng to allow automatic detection
+    interpolation: {
+      escapeValue: false // React already escapes values
+    },
+    detection: {
+      // Check localStorage first (user preference), then browser language
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'app-language',
+      // Map browser language codes to our supported languages
+      convertDetectedLanguage: (lng: string) => {
+        // Handle various Chinese language codes
+        if (lng.startsWith('zh')) {
+          return 'zh-CN';
+        }
+        // Handle various English language codes
+        if (lng.startsWith('en')) {
+          return 'en-US';
+        }
+        // Default to Chinese for unsupported languages
+        return 'zh-CN';
+      }
+    }
+  });
+
+export default i18n;
