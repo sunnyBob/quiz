@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NotificationContainer from '../components/NotificationContainer';
 import { useNotification } from '../hooks/useNotification';
@@ -8,6 +8,22 @@ const AdminLoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { notifications, removeNotification, showError } = useNotification();
+
+  // Update page title
+  useEffect(() => {
+    document.title = 'Admin Login - Quiz Platform';
+    return () => {
+      document.title = 'Quiz Platform';
+    };
+  }, []);
+
+  // Update page title
+  useEffect(() => {
+    document.title = 'Admin Login - Quiz Platform';
+    return () => {
+      document.title = 'Quiz Platform';
+    };
+  }, []);
 
   const handleLogin = async () => {
     setIsLoading(true);

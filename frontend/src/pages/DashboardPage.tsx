@@ -28,6 +28,14 @@ const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // Update page title
+  useEffect(() => {
+    document.title = 'Dashboard - Quiz Platform';
+    return () => {
+      document.title = 'Quiz Platform';
+    };
+  }, []);
+
   const fetchExams = async () => {
     setLoadingExams(true);
     try {

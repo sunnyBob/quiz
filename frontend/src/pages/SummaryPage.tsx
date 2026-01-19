@@ -45,6 +45,14 @@ const SummaryPage: React.FC = () => {
   const [language, setLanguage] = useState<'zh' | 'en'>(getBrowserLanguage());
   const [animatedScore, setAnimatedScore] = useState(0);
   const [rankPercentage, setRankPercentage] = useState<number | null>(null);
+
+  // Update page title
+  useEffect(() => {
+    document.title = 'Exam Results - Quiz Platform';
+    return () => {
+      document.title = 'Quiz Platform';
+    };
+  }, []);
   const [rank, setRank] = useState<number | null>(null);
   const [totalParticipants, setTotalParticipants] = useState(0);
   const [resultStatus, setResultStatus] = useState<'completed' | 'expired' | null>(null);

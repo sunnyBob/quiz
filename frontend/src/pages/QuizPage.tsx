@@ -95,6 +95,14 @@ const QuizPage: React.FC = () => {
   const serverSyncTimerRef = useRef<number | null>(null);
   const isAutoSubmittingRef = useRef(false);
 
+  // Update page title
+  useEffect(() => {
+    document.title = `Exam in Progress - Quiz Platform`;
+    return () => {
+      document.title = 'Quiz Platform';
+    };
+  }, []);
+
   useEffect(() => {
     if (!resultId || !examId) {
       showError(t('quiz.sessionInvalid', '会话无效，请重新开始'));
