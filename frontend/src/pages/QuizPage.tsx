@@ -675,7 +675,7 @@ const QuizPage: React.FC = () => {
                     {t('quiz.yourAnswer', '您的答案')}：{currentAnswer.user_answer}
                   </p>
                   <p className="text-xs text-blue-700 mt-1">
-                    {t('quiz.canModifyAnswer', '提交前可点击其他选项修改答案')}
+                    {t('quiz.canModifyAnswer', 'You can click other options to modify your answer before submitting')}
                   </p>
                 </div>
               </div>
