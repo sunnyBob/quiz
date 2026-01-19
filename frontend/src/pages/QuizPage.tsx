@@ -113,8 +113,6 @@ const QuizPage: React.FC = () => {
           // 设置标志阻止自动提交
           isAutoSubmittingRef.current = true;
           
-          const currentLang = i18n.language || 'zh-CN';
-          const isZh = currentLang.startsWith('zh');
           showWarning(t('quiz.examCompleted'), 3000);
           
           // 延迟一点时间让用户看到提示

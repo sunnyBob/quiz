@@ -21,9 +21,6 @@ RUN npm run build
 # 构建完成后清理开发依赖
 RUN npm prune --production
 
-# 创建数据目录
-RUN mkdir -p /app/data /app/uploads
-
 # 暴露端口
 EXPOSE 3000
 

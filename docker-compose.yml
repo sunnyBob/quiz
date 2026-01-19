@@ -14,8 +14,6 @@ services:
       TZ: ${TZ:-UTC}
     volumes:
       - quiz-mysql-data:/var/lib/mysql
-      # 初始化脚本（可选）
-      # - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3306:3306"
     networks:
@@ -51,9 +49,6 @@ services:
         condition: service_healthy
     networks:
       - quiz-network
-    volumes:
-      - quiz-backend-data:/app/data
-      - quiz-uploads:/app/uploads
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/exams"]
       interval: 30s
@@ -92,40 +87,6 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Ngrok 服务 (已禁用，使用 DDNS 方式部署)
-  # ngrok:
-  #   image: ngrok/ngrok:latest
-  #   container_name: quiz-ngrok
-  #   restart: always
-  #   environment:
-  #     NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-  #   command: http frontend:80
-  #   ports:
-  #     - "4040:4040"
-  #   networks:
-  #     - quiz-network
-  #   depends_on:
-  #     - frontend
-
-  # Cloudflare Tunnel 服务 (已禁用，如果需要请取消注释并注释掉 ngrok)
-  # cloudflared:
-  #   image: cloudflare/cloudflared:latest
-  #   container_name: quiz-cloudflared
-  #   restart: always
-  #   command: tunnel --no-autoupdate run
-  #   environment:
-  #     - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
-  #   networks:
-  #     - quiz-network
-  #   depends_on:
-  #     - frontend
-  #     - backend
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "10m"
-  #       max-file: "3"
-
 networks:
   quiz-network:
     driver: bridge
@@ -142,17 +103,3 @@ volumes:
       # - Synology NAS: /volume1/docker/quiz/mysql
       # - 其他: /your/custom/path/mysql
       device: /volume1/docker/quiz/mysql
-  quiz-backend-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      # 请根据你的服务器环境修改此路径
-      device: /volume1/docker/quiz/backend
-  quiz-uploads:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      # 请根据你的服务器环境修改此路径
-      device: /volume1/docker/quiz/uploads

@@ -40,7 +40,7 @@ TZ=Asia/Shanghai
 EOF
 
 # 3. 创建数据目录
-sudo mkdir -p /data/quiz/{mysql,backend,uploads}
+sudo mkdir -p /data/quiz/mysql
 sudo chown -R $USER:$USER /data/quiz
 
 # 4. 修改 docker-compose.yml 中的数据目录路径
@@ -178,9 +178,6 @@ docker compose logs -f frontend     # 前端服务
 ```bash
 # 备份数据库
 docker exec quiz-mysql mysqldump -u root -p${MYSQL_ROOT_PASSWORD} quiz_db > backup.sql
-
-# 备份上传文件
-tar -czf uploads_backup.tar.gz /data/quiz/uploads/
 ```
 
 ### 更新应用
