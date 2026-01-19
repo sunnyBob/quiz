@@ -1,28 +1,39 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
-import path from 'path';
 
-// 确保从正确的路径加载 .env 文件
-dotenv.config({ path: path.join(__dirname, '../.env') });
+// 优先使用环境中已有的变量（Docker 注入），如果没有则尝试加载 .env
+dotenv.config();
 
 const initDb = async () => {
+  const dbHost = process.env.DB_HOST || 'localhost';
+  const dbUser = process.env.DB_USER || 'root';
+  const dbPassword = process.env.DB_PASSWORD || process.env.MYSQL_ROOT_PASSWORD || '';
+  const dbName = process.env.DB_NAME || 'quiz_db';
+
+  console.log(`🚀 Initializing database at ${dbHost}...`);
+
   // Create connection without database first
-  const tempConnection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'password',
-  });
+  let tempConnection;
+  try {
+    tempConnection = await mysql.createConnection({
+      host: dbHost,
+      user: dbUser,
+      password: dbPassword,
+    });
+  } catch (err: any) {
+    console.error('❌ Failed to connect to MySQL server:', err.message);
+    throw err;
+  }
 
   // Create database if not exists
-  const dbName = process.env.DB_NAME || 'quiz_system';
   await tempConnection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
   await tempConnection.end();
 
   // Now connect with database
   const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'password',
+    host: dbHost,
+    user: dbUser,
+    password: dbPassword,
     database: dbName,
     waitForConnections: true,
     connectionLimit: 10,
@@ -31,6 +42,7 @@ const initDb = async () => {
 
   const connection = await pool.getConnection();
   try {
+    console.log('📦 Creating tables if not exist...');
     // Users table - Users are scoped to specific exams
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -52,14 +64,33 @@ const initDb = async () => {
         description TEXT,
         created_by INT,
         share_link_id VARCHAR(100) UNIQUE,
-        language VARCHAR(10) DEFAULT 'zh-CN', -- Exam content language (zh-CN, en-US)
-        time_limit_minutes INT DEFAULT 0, -- 0 means no time limit
+        language VARCHAR(10) DEFAULT 'zh-CN',
+        time_limit_minutes INT DEFAULT 0,
         enable_copy_prevention BOOLEAN DEFAULT TRUE,
         enable_watermark BOOLEAN DEFAULT TRUE,
         watermark_text VARCHAR(255) DEFAULT 'Exam in Progress',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Ensure all columns exist in exams table (for older installations)
+    const [columns] = await connection.query("SHOW COLUMNS FROM exams");
+    const columnNames = (columns as any[]).map(c => c.Field);
+
+    const requiredColumns = [
+      { name: 'language', type: "VARCHAR(10) DEFAULT 'zh-CN' AFTER share_link_id" },
+      { name: 'time_limit_minutes', type: "INT DEFAULT 0 AFTER language" },
+      { name: 'enable_copy_prevention', type: "BOOLEAN DEFAULT TRUE AFTER time_limit_minutes" },
+      { name: 'enable_watermark', type: "BOOLEAN DEFAULT TRUE AFTER enable_copy_prevention" },
+      { name: 'watermark_text', type: "VARCHAR(255) DEFAULT 'Exam in Progress' AFTER enable_watermark" }
+    ];
+
+    for (const col of requiredColumns) {
+      if (!columnNames.includes(col.name)) {
+        console.log(`Adding missing column ${col.name} to exams table...`);
+        await connection.query(`ALTER TABLE exams ADD COLUMN ${col.name} ${col.type}`);
+      }
+    }
 
     // Add foreign key constraint to users table after exams table is created
     await connection.query(`
@@ -136,14 +167,24 @@ const initDb = async () => {
       )
     `);
 
-    console.log('Database tables initialized successfully');
+    console.log('✅ Database tables initialized successfully');
   } catch (error) {
-    console.error('Error initializing database tables:', error);
+    console.error('❌ Error initializing database tables:', error);
+    console.error('Environment:', {
+      DB_HOST: process.env.DB_HOST,
+      DB_USER: process.env.DB_USER,
+      DB_NAME: process.env.DB_NAME,
+      hasPassword: !!(process.env.DB_PASSWORD || process.env.MYSQL_ROOT_PASSWORD)
+    });
+    throw error;  // 继续抛出错误以便上层捕获
   } finally {
     connection.release();
     await pool.end();
   }
 };
 
-initDb();
+// 使用 CommonJS 导出以确保兼容性
+module.exports = { initDb };
+
+// initDb(); // 移出到 index.ts 中手动调用
 

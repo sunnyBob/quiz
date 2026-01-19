@@ -31,6 +31,7 @@ import {
 } from './dao';
 import pool from './db';
 import { RowDataPacket } from 'mysql2';
+const { initDb } = require('./schema');
 
 const app = express();
 app.use(cors());
@@ -906,6 +907,18 @@ app.get('/api/exams/:examId/export-csv', async (req, res) => {
 });
 
 const PORT = Number(process.env.PORT) || 3000;
+
+// 先启动服务器，然后在后台初始化数据库
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // 异步初始化数据库（不阻塞服务器启动）
+  initDb()
+    .then(() => {
+      console.log('✅ Database initialized successfully');
+    })
+    .catch(err => {
+      console.error('⚠️  Database initialization failed:', err);
+      console.error('Server is running but database may not be ready');
+    });
 });

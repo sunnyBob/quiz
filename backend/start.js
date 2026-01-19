@@ -5,8 +5,8 @@ require('dotenv').config();
 console.log('Environment check:', {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD ? '***' : 'NO PASSWORD',
-  database: process.env.DB_NAME || 'quiz_system',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'quiz_db',
   port: process.env.PORT || '3000'
 });
 

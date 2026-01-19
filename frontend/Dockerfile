@@ -9,6 +9,9 @@ COPY package*.json ./
 # 安装依赖 (使用 npm install 以解决跨平台构建时的 optional dependencies 问题)
 RUN npm install
 
+# 修复 Rollup 在 Linux/Alpine 环境下的缺失依赖问题
+RUN npm install @rollup/rollup-linux-x64-musl
+
 # 复制源代码
 COPY . .
 

@@ -54,7 +54,7 @@ sudo chown -R $USER:$USER /data/quiz
 **访问地址:**
 - 前端: http://your-server-ip:8080
 - 管理员: http://your-server-ip:8080/admin
-- 后端 API: http://your-server-ip:3000/api
+- 后端 API: http://your-server-ip:3001/api
 
 **详细文档:**
 - [快速部署指南](./QUICK_DEPLOY.md) - 简明扼要，快速上手
@@ -218,7 +218,7 @@ docker compose restart backend                 # 重启后端服务
 
 **前端无法访问后端:**
 ```bash
-curl http://localhost:3000/api/exams          # 测试后端 API
+curl http://localhost:3001/api/exams          # 测试后端 API
 docker compose restart frontend                # 重启前端服务
 ```
 

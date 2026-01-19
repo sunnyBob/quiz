@@ -82,8 +82,8 @@ ls -la
                   │ API 调用
                   ▼
          ┌─────────────────┐
-         │  Backend 后端    │  (Node.js + Express)
-         │   容器端口: 3000 │  映射到宿主机 3000
+         │   Backend 后端    │  (Node.js + Express)
+         │   容器端口: 3000 │  映射到宿主机 3001
          └────────┬─────────┘
                   │ 数据库查询
                   ▼
@@ -411,7 +411,7 @@ docker-compose ps
 
 ```
 NAME            COMMAND                  SERVICE    STATUS         PORTS
-quiz-backend    "node dist/index.js"     backend    Up 2 minutes   0.0.0.0:3000->3000/tcp
+quiz-backend    "node dist/index.js"     backend    Up 2 minutes   0.0.0.0:3001->3000/tcp
 quiz-frontend   "nginx -g 'daemon of…"   frontend   Up 2 minutes   0.0.0.0:8080->80/tcp
 quiz-mysql      "docker-entrypoint.s…"   mysql      Up 2 minutes   0.0.0.0:3306->3306/tcp
 ```
@@ -424,7 +424,7 @@ quiz-mysql      "docker-entrypoint.s…"   mysql      Up 2 minutes   0.0.0.0:330
 
 ```bash
 # 在 SSH 终端测试
-curl http://localhost:3000/api/exams
+curl http://localhost:3001/api/exams
 ```
 
 如果返回 JSON 数据（即使是空数组 `[]`），说明后端正常：
@@ -471,12 +471,12 @@ exit
 
 3. **测试后端 API**（在浏览器地址栏）：
    ```
-   http://群辉IP:3000/api/exams
+   http://群辉IP:3001/api/exams
    ```
    应该返回 JSON 数据。
 
 **💡 学习点：如果无法访问？**
-- 检查群辉防火墙是否开放 8080 和 3000 端口
+- 检查群辉防火墙是否开放 8080 和 3001 端口
 - 控制面板 → 安全性 → 防火墙
 - 添加允许规则或临时禁用防火墙测试
 
@@ -698,7 +698,7 @@ curl http://localhost:8080
 docker-compose logs -f backend
 
 # 2. 测试 API
-curl http://localhost:3000/api/exams
+curl http://localhost:3001/api/exams
 
 # 3. 检查数据库连接
 docker exec quiz-backend sh -c "env | grep DB_"
