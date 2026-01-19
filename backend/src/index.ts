@@ -12,6 +12,7 @@ import {
   getQuestionsByExamId,
   createResult,
   saveAnswer,
+  updateAnswer,
   getAnswersByResultId,
   createQuestion,
   getQuestionById,
@@ -212,13 +213,7 @@ app.post('/api/answers', async (req, res) => {
   try {
     const { resultId, questionId, userAnswer, duration } = req.body;
     
-    // 检查是否已经回答过此题
-    const existingAnswer = await getAnswerByResultAndQuestion(resultId, questionId);
-    if (existingAnswer) {
-      return res.status(409).json({ error: 'Question already answered' });
-    }
-    
-    // 验证考试会话是否有效（已完成或超时自动提交的考试不能再提交答案）
+    // 验证考试会话是否有效（已完成或超时自动提交的考试不能再提交/修改答案）
     const result = await getResultById(resultId);
     if (!result) {
       return res.status(404).json({ error: 'Result not found' });
@@ -227,6 +222,10 @@ app.post('/api/answers', async (req, res) => {
     if (result.status === 'completed' || result.status === 'expired') {
       return res.status(403).json({ error: 'Exam already finished' });
     }
+    
+    // 检查是否已经回答过此题 - 如果已回答则更新而不是报错
+    const existingAnswer = await getAnswerByResultAndQuestion(resultId, questionId);
+    const isUpdate = !!existingAnswer;
     
     // 服务端验证答案正确性
     const question = await getQuestionById(questionId);
@@ -271,16 +270,27 @@ app.post('/api/answers', async (req, res) => {
     const validAnswers = getValidAnswers(question);
     const isCorrect = validAnswers.includes(userAnswer);
     
-    await saveAnswer({
-      result_id: resultId,
-      question_id: questionId,
-      user_answer: userAnswer,
-      is_correct: isCorrect,
-      duration_seconds: duration,
-    });
+    // 如果已存在答案,则更新;否则插入新答案
+    if (isUpdate) {
+      await updateAnswer({
+        result_id: resultId,
+        question_id: questionId,
+        user_answer: userAnswer,
+        is_correct: isCorrect,
+        duration_seconds: duration,
+      });
+    } else {
+      await saveAnswer({
+        result_id: resultId,
+        question_id: questionId,
+        user_answer: userAnswer,
+        is_correct: isCorrect,
+        duration_seconds: duration,
+      });
+    }
     
     // 安全响应：只返回提交成功状态，不返回正确答案
-    res.json({ success: true });
+    res.json({ success: true, isUpdate });
   } catch (error) {
     console.error('Error saving answer:', error);
     res.status(500).json({ error: 'Failed to save answer' });
@@ -917,7 +927,7 @@ app.listen(PORT, () => {
     .then(() => {
       console.log('✅ Database initialized successfully');
     })
-    .catch(err => {
+    .catch((err: any) => {
       console.error('⚠️  Database initialization failed:', err);
       console.error('Server is running but database may not be ready');
     });

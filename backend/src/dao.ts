@@ -402,6 +402,19 @@ export const saveAnswer = async (answer: Answer): Promise<void> => {
   );
 };
 
+export const updateAnswer = async (answer: Answer): Promise<void> => {
+  await pool.query(
+    'UPDATE answers SET user_answer = ?, is_correct = ?, duration_seconds = ? WHERE result_id = ? AND question_id = ?',
+    [
+      answer.user_answer,
+      answer.is_correct,
+      answer.duration_seconds,
+      answer.result_id,
+      answer.question_id,
+    ]
+  );
+};
+
 export const getAnswersByResultId = async (
   resultId: number
 ): Promise<Answer[]> => {

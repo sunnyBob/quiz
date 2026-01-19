@@ -250,11 +250,16 @@ const QuizPage: React.FC = () => {
 
   const handleAnswer = async (option: string) => {
     const currentQ = questions[currentQIndex];
-    if (answers[currentQ.id]) return;
+    const existingAnswer = answers[currentQ.id];
+    
+    // 如果点击的是已选择的答案,不做任何操作
+    if (existingAnswer && existingAnswer.user_answer === option) {
+      return;
+    }
 
     try {
         // 提交答案到服务端（不返回正确答案）
-        await axios.post(apiUrls.saveAnswer(), {
+        const response = await axios.post(apiUrls.saveAnswer(), {
             resultId,
             questionId: currentQ.id,
             userAnswer: option,
@@ -271,10 +276,15 @@ const QuizPage: React.FC = () => {
 
         // Update question status to answered
         await updateQuestionStatus(currentQ.id, 'answered', 0);
+        
+        // 显示提示信息
+        if (response.data.isUpdate) {
+            showWarning(t('quiz.answerUpdated', '答案已更新'));
+        }
     } catch (err: any) {
         console.error("Failed to save answer", err);
-        if (err.response?.status === 409) {
-            showWarning(t('quiz.alreadyAnswered'));
+        if (err.response?.status === 403) {
+            showError(t('quiz.examFinished', '考试已结束，无法修改答案'));
         } else {
             showError(t('quiz.submitFailed'));
         }
@@ -603,18 +613,17 @@ const QuizPage: React.FC = () => {
             {/* Options */}
             <div className="space-y-2 sm:space-y-3 ml-0 sm:ml-9">
               {getLocalizedOptions(currentQ.options).map((opt, idx) => {
-                let optionClass = "w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 active:scale-98 ";
+                const isSelected = isAnswered && opt === currentAnswer.user_answer;
+                let optionClass = "w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ";
 
-                if (isAnswered) {
-                  if (opt === currentAnswer.user_answer) {
-                    // 用户选择的答案显示为蓝色（已选中状态）
-                    optionClass += "bg-primary-50 border-primary-500 text-primary-900";
-                  } else {
-                    // 其他选项显示为灰色（未选中状态）
-                    optionClass += "bg-gray-50 border-gray-200 text-gray-500";
-                  }
+                if (isSelected) {
+                  // 用户选择的答案显示为蓝色（已选中状态），但仍可点击修改
+                  optionClass += "bg-primary-50 border-primary-500 text-primary-900 hover:border-primary-600 hover:bg-primary-100 active:scale-98";
+                } else if (isAnswered) {
+                  // 其他选项显示为可选状态
+                  optionClass += "bg-white border-gray-200 text-gray-700 hover:border-primary-300 hover:bg-primary-50 active:scale-98";
                 } else {
-                  optionClass += "bg-white border-gray-200 hover:border-primary-300 hover:bg-primary-50 cursor-pointer";
+                  optionClass += "bg-white border-gray-200 hover:border-primary-300 hover:bg-primary-50 active:scale-98";
                 }
 
                 const optionLabel = String.fromCharCode(65 + idx); // A, B, C, D
@@ -623,19 +632,18 @@ const QuizPage: React.FC = () => {
                   <button
                     key={idx}
                     onClick={() => handleAnswer(opt)}
-                    disabled={isAnswered}
                     className={optionClass}
                   >
                     <div className="flex items-center space-x-2 sm:space-x-3">
-                      <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 ${
-                        isAnswered && opt === currentAnswer.user_answer
+                      <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 transition-colors ${
+                        isSelected
                           ? 'bg-primary-500 border-primary-500 text-white'
                           : 'border-gray-300 text-gray-600'
                       }`}>
                         {optionLabel}
                       </div>
                       <span className="flex-1 text-left text-sm sm:text-base">{opt}</span>
-                      {isAnswered && opt === currentAnswer.user_answer && (
+                      {isSelected && (
                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -658,10 +666,13 @@ const QuizPage: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold mb-1 text-blue-900 text-sm sm:text-base">
-                    {t('quiz.answerSubmitted')}
+                    {t('quiz.answerSubmitted', '答案已提交')}
                   </h3>
                   <p className="text-xs sm:text-sm text-blue-800 break-words">
-                    {t('quiz.yourAnswer')}：{currentAnswer.user_answer}
+                    {t('quiz.yourAnswer', '您的答案')}：{currentAnswer.user_answer}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    {t('quiz.canModifyAnswer', '提交前可点击其他选项修改答案')}
                   </p>
                 </div>
               </div>
