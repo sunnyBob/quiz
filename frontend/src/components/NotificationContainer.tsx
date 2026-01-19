@@ -12,7 +12,7 @@ const NotificationContainer: React.FC<NotificationContainerProps> = ({
   onRemove
 }) => {
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-2 sm:top-4 left-2 right-2 sm:left-auto sm:right-4 z-50 space-y-2 max-w-md sm:max-w-sm mx-auto sm:mx-0">
       {notifications.map((notification, index) => (
         <div
           key={notification.id}

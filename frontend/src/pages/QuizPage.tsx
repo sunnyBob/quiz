@@ -445,10 +445,10 @@ const QuizPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('quiz.loadingExam')}</p>
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-primary-600 mx-auto mb-3 sm:mb-4"></div>
+          <p className="text-gray-600 text-sm sm:text-base">{t('quiz.loadingExam')}</p>
         </div>
       </div>
     );
@@ -456,11 +456,11 @@ const QuizPage: React.FC = () => {
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="text-6xl mb-4">📝</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('quiz.noQuestions')}</h2>
-          <p className="text-gray-600">{t('quiz.contactAdmin')}</p>
+          <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">📝</div>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{t('quiz.noQuestions')}</h2>
+          <p className="text-sm sm:text-base text-gray-600">{t('quiz.contactAdmin')}</p>
         </div>
       </div>
     );
@@ -480,9 +480,9 @@ const QuizPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50">
         {/* Time warnings */}
         {timeWarnings.length > 0 && (
-          <div className="fixed top-4 right-4 z-50 space-y-2">
+          <div className="fixed top-2 sm:top-4 left-2 right-2 sm:left-auto sm:right-4 z-50 space-y-2 max-w-md sm:max-w-sm mx-auto sm:mx-0">
             {timeWarnings.map((warning, index) => (
-              <div key={index} className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded-lg shadow-lg animate-pulse">
+              <div key={index} className="bg-orange-100 border border-orange-400 text-orange-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg shadow-lg animate-pulse text-sm sm:text-base">
                 {warning}
               </div>
             ))}
@@ -491,16 +491,18 @@ const QuizPage: React.FC = () => {
 
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 relative z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          {/* Mobile: Stack vertically, Desktop: Side by side */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Question Progress */}
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">{currentQIndex + 1}</span>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm sm:text-base font-bold">{currentQIndex + 1}</span>
                 </div>
-                <span className="text-gray-600">/ {questions.length}</span>
+                <span className="text-gray-600 text-sm sm:text-base whitespace-nowrap">/ {questions.length}</span>
               </div>
-              <div className="w-48 bg-gray-200 rounded-full h-2">
+              <div className="flex-1 sm:w-32 md:w-48 bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
@@ -508,7 +510,8 @@ const QuizPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
+            {/* Timer and Language Controls */}
+            <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-3">
               {/* Language Switcher */}
               <LanguageSwitcher />
               
@@ -523,8 +526,8 @@ const QuizPage: React.FC = () => {
                 />
               ) : (
                 /* Show total time if no time limit */
-                <div className="flex items-center space-x-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-600">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-50 rounded-lg border border-gray-200 text-xs sm:text-sm text-gray-600">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="font-mono">{formatTime(totalTime)}</span>
@@ -536,32 +539,32 @@ const QuizPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Progress Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-2 lg:order-1">
             <QuizProgress
               questions={questions}
               currentQuestionIndex={currentQIndex}
               questionStatuses={questionStatuses}
               onQuestionClick={handleQuestionNavigation}
-              className="sticky top-4"
+              className="lg:sticky lg:top-4"
             />
           </div>
 
           {/* Main Quiz Content */}
-          <div className="lg:col-span-3">
-            <div className="card relative">
+          <div className="lg:col-span-3 order-1 lg:order-2">
+            <div className="card relative p-4 sm:p-6">
               
           {/* Question */}
-          <div className="mb-8">
-            <div className="flex items-start mb-6 gap-3">
-              <div className="flex items-start space-x-3 flex-1 min-w-0">
-                <div className="flex-shrink-0 w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center mt-1">
-                  <span className="text-primary-600 text-sm font-medium">Q</span>
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-start mb-4 sm:mb-6 gap-2 sm:gap-3">
+              <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0">
+                <div className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-primary-100 rounded-full flex items-center justify-center mt-0.5 sm:mt-1">
+                  <span className="text-primary-600 text-xs sm:text-sm font-medium">Q</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-medium text-gray-900 leading-relaxed break-words">
+                  <h2 className="text-base sm:text-lg font-medium text-gray-900 leading-relaxed break-words">
                     {getLocalizedContent(currentQ.content)}
                   </h2>
                 </div>
@@ -578,7 +581,7 @@ const QuizPage: React.FC = () => {
                       await updateQuestionStatus(currentQ.id, 'flagged', 0);
                     }
                   }}
-                  className={`flex-shrink-0 p-2 rounded-lg transition-all duration-200 hover:scale-110 self-start ${
+                  className={`flex-shrink-0 p-2 rounded-lg transition-all duration-200 active:scale-95 sm:hover:scale-110 self-start ${
                     questionStatuses.find(s => s.id === currentQ.id)?.status === 'flagged'
                       ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
                       : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
@@ -590,7 +593,7 @@ const QuizPage: React.FC = () => {
                       : t('quiz.flagQuestion');
                   })()}
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -598,9 +601,9 @@ const QuizPage: React.FC = () => {
             </div>
 
             {/* Options */}
-            <div className="space-y-3 ml-9">
+            <div className="space-y-2 sm:space-y-3 ml-0 sm:ml-9">
               {getLocalizedOptions(currentQ.options).map((opt, idx) => {
-                let optionClass = "w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ";
+                let optionClass = "w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 active:scale-98 ";
 
                 if (isAnswered) {
                   if (opt === currentAnswer.user_answer) {
@@ -623,17 +626,17 @@ const QuizPage: React.FC = () => {
                     disabled={isAnswered}
                     className={optionClass}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-sm font-medium ${
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 ${
                         isAnswered && opt === currentAnswer.user_answer
                           ? 'bg-primary-500 border-primary-500 text-white'
                           : 'border-gray-300 text-gray-600'
                       }`}>
                         {optionLabel}
                       </div>
-                      <span className="flex-1 text-left">{opt}</span>
+                      <span className="flex-1 text-left text-sm sm:text-base">{opt}</span>
                       {isAnswered && opt === currentAnswer.user_answer && (
-                        <svg className="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
@@ -646,18 +649,18 @@ const QuizPage: React.FC = () => {
 
           {/* Answer Status */}
           {isAnswered && (
-            <div className="rounded-lg p-4 mb-6 bg-blue-50 border border-blue-200">
-              <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <div className="rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 bg-blue-50 border border-blue-200">
+              <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
+                <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 bg-blue-500 rounded-full flex items-center justify-center mt-0.5 sm:mt-0">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1 text-blue-900">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold mb-1 text-blue-900 text-sm sm:text-base">
                     {t('quiz.answerSubmitted')}
                   </h3>
-                  <p className="text-sm text-blue-800">
+                  <p className="text-xs sm:text-sm text-blue-800 break-words">
                     {t('quiz.yourAnswer')}：{currentAnswer.user_answer}
                   </p>
                 </div>
@@ -666,34 +669,35 @@ const QuizPage: React.FC = () => {
           )}
           
           {/* Navigation */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center pt-4 sm:pt-6 border-t border-gray-200 gap-3 sm:gap-0">
+            <div className="flex items-center justify-between sm:justify-start sm:space-x-4 order-2 sm:order-1">
+              <div className="text-xs sm:text-sm text-gray-500">
                 {t('quiz.question')} {currentQIndex + 1} / {questions.length}
               </div>
               {currentQIndex > 0 && (
                 <button
                   onClick={() => handleQuestionNavigation(currentQIndex - 1)}
-                  className="btn-secondary text-sm"
+                  className="btn-secondary text-xs sm:text-sm px-3 py-2"
                 >
-                  {t('quiz.previousQuestion')}
+                  <span className="hidden sm:inline">{t('quiz.previousQuestion')}</span>
+                  <span className="sm:hidden">上一题</span>
                 </button>
               )}
             </div>
 
             <button
               onClick={handleNext}
-              className="btn-primary"
+              className="btn-primary text-sm sm:text-base order-1 sm:order-2"
             >
               {currentQIndex === questions.length - 1 ? (
-                <div className="flex items-center">
+                <div className="flex items-center justify-center">
                   <span>{t('quiz.submitAnswer')}</span>
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               ) : (
-                <div className="flex items-center">
+                <div className="flex items-center justify-center">
                   <span>{t('quiz.nextQuestion')}</span>
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />

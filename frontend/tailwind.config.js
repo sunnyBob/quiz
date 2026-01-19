@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '375px',  // 额外的小屏幕断点
+      },
       colors: {
         primary: {
           50: '#eff6ff',
@@ -13,6 +16,7 @@ export default {
           500: '#3b82f6',
           600: '#2563eb',
           700: '#1d4ed8',
+          800: '#1e40af',
         },
         success: {
           50: '#f0fdf4',
@@ -26,6 +30,12 @@ export default {
           500: '#ef4444',
           600: '#dc2626',
         }
+      },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
       }
     },
   },

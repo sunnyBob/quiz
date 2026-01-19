@@ -86,26 +86,75 @@ html {
   body {
     @apply bg-gray-50 text-gray-900 font-sans;
   }
+  
+  /* 移动端优化 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* 防止移动端文字缩放 */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  
+  /* 优化触摸滚动 */
+  body {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+  
+  /* 确保按钮和输入框在移动端使用正常字体大小 */
+  button, input, select, textarea {
+    font-size: 16px;
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation;
   }
 
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 touch-manipulation;
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base;
   }
 
   .card {
     @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
   }
 
-  /* Anti-cheat styles */
+@layer utilities {
+  /* 移动端触摸优化 */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* 激活状态缩放效果 */
+  .active\:scale-98:active {
+    transform: scale(0.98);
+  }
+  
+  .active\:scale-95:active {
+    transform: scale(0.95);
+  }
+  
+  /* 移动端安全区域 */
+  @supports (padding: max(0px)) {
+    .safe-area-inset-top {
+      padding-top: max(env(safe-area-inset-top), 0);
+    }
+    
+    .safe-area-inset-bottom {
+      padding-bottom: max(env(safe-area-inset-bottom), 0);
+    }
+  }
+}
+
+/* Anti-cheat styles */
   .anti-cheat {
     -webkit-user-select: none;
     -moz-user-select: none;

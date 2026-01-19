@@ -72,18 +72,18 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
   const progressPercentage = (answeredCount / questions.length) * 100;
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}>
+    <div className={`bg-white rounded-lg border border-gray-200 p-3 sm:p-4 ${className}`}>
       {/* Progress Summary */}
-      <div className="mb-4">
+      <div className="mb-3 sm:mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-900">{t('quiz.progress')}</h3>
-          <span className="text-sm text-gray-600">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-900">{t('quiz.progress')}</h3>
+          <span className="text-xs sm:text-sm text-gray-600">
             {answeredCount}/{questions.length}
           </span>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-2 sm:mb-3">
           <div
             className="bg-primary-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
@@ -91,22 +91,22 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
         </div>
 
         {/* Status Summary - Only show answered and flagged */}
-        <div className="flex items-center space-x-4 text-xs">
+        <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs">
           <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-            <span className="text-gray-600">{t('quiz.answered')} {answeredCount}</span>
+            <div className="w-3 h-3 bg-green-100 border border-green-300 rounded flex-shrink-0"></div>
+            <span className="text-gray-600 whitespace-nowrap">{t('quiz.answered')} {answeredCount}</span>
           </div>
           {flaggedCount > 0 && (
             <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded"></div>
-              <span className="text-gray-600">{t('quiz.flagged')} {flaggedCount}</span>
+              <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded flex-shrink-0"></div>
+              <span className="text-gray-600 whitespace-nowrap">{t('quiz.flagged')} {flaggedCount}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Question Grid */}
-      <div className="grid grid-cols-5 gap-2">
+      {/* Question Grid - Responsive columns */}
+      <div className="grid grid-cols-8 sm:grid-cols-5 lg:grid-cols-5 gap-1.5 sm:gap-2">
         {questions.map((question, index) => {
           const status = getQuestionStatus(question.id);
           const isCurrent = index === currentQuestionIndex;
@@ -118,10 +118,10 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
               key={question.id}
               onClick={() => onQuestionClick?.(index)}
               className={`
-                relative w-10 h-10 rounded-lg border-2 text-sm font-medium transition-all duration-200
+                relative aspect-square w-full rounded-md sm:rounded-lg border-2 text-xs sm:text-sm font-medium transition-all duration-200 active:scale-95
                 ${statusColor}
-                ${onQuestionClick ? 'hover:scale-105 cursor-pointer' : 'cursor-default'}
-                ${isCurrent ? 'ring-4 ring-primary-500 ring-opacity-50 scale-110 shadow-lg' : ''}
+                ${onQuestionClick ? 'sm:hover:scale-105 cursor-pointer' : 'cursor-default'}
+                ${isCurrent ? 'ring-2 sm:ring-4 ring-primary-500 ring-opacity-50 scale-105 sm:scale-110 shadow-md sm:shadow-lg' : ''}
               `}
               title={`${t('quiz.question')} ${index + 1} - ${
                 status === 'answered' ? t('quiz.status.answered') : 
@@ -139,29 +139,29 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
         })}
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-primary-600 rounded"></div>
-            <span>{t('quiz.legend.currentQuestion')}</span>
+      {/* Legend - Collapsible on mobile */}
+      <div className="mt-3 sm:mt-4 pt-3 border-t border-gray-200">
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 text-xs text-gray-600">
+          <div className="flex items-center space-x-1.5">
+            <div className="w-3 h-3 bg-primary-600 rounded flex-shrink-0"></div>
+            <span className="truncate">{t('quiz.legend.currentQuestion')}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-            <span>{t('quiz.legend.completed')}</span>
+          <div className="flex items-center space-x-1.5">
+            <div className="w-3 h-3 bg-green-100 border border-green-300 rounded flex-shrink-0"></div>
+            <span className="truncate">{t('quiz.legend.completed')}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded"></div>
-            <span>{t('quiz.legend.flagged')}</span>
+          <div className="flex items-center space-x-1.5">
+            <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded flex-shrink-0"></div>
+            <span className="truncate">{t('quiz.legend.flagged')}</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
-            <span>{t('quiz.legend.visited')}</span>
+          <div className="flex items-center space-x-1.5">
+            <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded flex-shrink-0"></div>
+            <span className="truncate">{t('quiz.legend.visited')}</span>
           </div>
         </div>
         
-        {/* Help Text */}
-        <div className="mt-3 pt-2 border-t border-gray-100 text-xs text-gray-500 space-y-1">
+        {/* Help Text - Hide on small screens */}
+        <div className="hidden sm:block mt-3 pt-2 border-t border-gray-100 text-xs text-gray-500 space-y-1">
           <p>{t('quiz.help.click')}</p>
           <p>{t('quiz.help.flag')}</p>
           <p>{t('quiz.help.skip')}</p>
