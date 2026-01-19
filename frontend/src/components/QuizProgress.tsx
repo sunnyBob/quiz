@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ProgressQuestion {
   id: number;
@@ -25,6 +26,8 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
   onQuestionClick,
   className = ''
 }) => {
+  const { t } = useTranslation();
+  
   const getStatusColor = (status: string) => {
     // Priority: answered > flagged > visited/skipped > not_visited
     switch (status) {
@@ -73,7 +76,7 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
       {/* Progress Summary */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-900">答题进度</h3>
+          <h3 className="text-sm font-medium text-gray-900">{t('quiz.progress')}</h3>
           <span className="text-sm text-gray-600">
             {answeredCount}/{questions.length}
           </span>
@@ -91,12 +94,12 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
         <div className="flex items-center space-x-4 text-xs">
           <div className="flex items-center space-x-1">
             <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-            <span className="text-gray-600">已答 {answeredCount}</span>
+            <span className="text-gray-600">{t('quiz.answered')} {answeredCount}</span>
           </div>
           {flaggedCount > 0 && (
             <div className="flex items-center space-x-1">
               <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded"></div>
-              <span className="text-gray-600">标记 {flaggedCount}</span>
+              <span className="text-gray-600">{t('quiz.flagged')} {flaggedCount}</span>
             </div>
           )}
         </div>
@@ -120,7 +123,13 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
                 ${onQuestionClick ? 'hover:scale-105 cursor-pointer' : 'cursor-default'}
                 ${isCurrent ? 'ring-4 ring-primary-500 ring-opacity-50 scale-110 shadow-lg' : ''}
               `}
-              title={`题目 ${index + 1} - ${status === 'answered' ? '已答' : status === 'flagged' ? '已标记' : status === 'skipped' ? '已跳过' : status === 'visited' ? '已访问' : '未访问'}${isCurrent ? '（当前）' : ''}`}
+              title={`${t('quiz.question')} ${index + 1} - ${
+                status === 'answered' ? t('quiz.status.answered') : 
+                status === 'flagged' ? t('quiz.status.flagged') : 
+                status === 'skipped' ? t('quiz.status.skipped') : 
+                status === 'visited' ? t('quiz.status.visited') : 
+                t('quiz.status.notVisited')
+              }${isCurrent ? t('quiz.status.current') : ''}`}
             >
               <span className="absolute inset-0 flex items-center justify-center">
                 {statusIcon || (index + 1)}
@@ -135,27 +144,27 @@ const QuizProgress: React.FC<QuizProgressProps> = ({
         <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-primary-600 rounded"></div>
-            <span>当前题目</span>
+            <span>{t('quiz.legend.currentQuestion')}</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
-            <span>已完成</span>
+            <span>{t('quiz.legend.completed')}</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded"></div>
-            <span>已标记</span>
+            <span>{t('quiz.legend.flagged')}</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
-            <span>已访问</span>
+            <span>{t('quiz.legend.visited')}</span>
           </div>
         </div>
         
         {/* Help Text */}
         <div className="mt-3 pt-2 border-t border-gray-100 text-xs text-gray-500 space-y-1">
-          <p>💡 点击题号可快速跳转</p>
-          <p>🏁 标记难题供后续作答</p>
-          <p>➡️ 使用"下一题"暂时跳过</p>
+          <p>{t('quiz.help.click')}</p>
+          <p>{t('quiz.help.flag')}</p>
+          <p>{t('quiz.help.skip')}</p>
         </div>
       </div>
     </div>

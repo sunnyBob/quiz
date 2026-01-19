@@ -9,14 +9,17 @@ RUN apk add --no-cache curl wget
 # 复制 package.json 和 package-lock.json
 COPY package*.json ./
 
-# 安装依赖（生产环境）
-RUN npm ci --only=production
+# 安装所有依赖（包括 devDependencies 用于构建）
+RUN npm ci
 
 # 复制源代码
 COPY . .
 
 # 构建 TypeScript
 RUN npm run build
+
+# 构建完成后清理开发依赖
+RUN npm prune --production
 
 # 创建数据目录
 RUN mkdir -p /app/data /app/uploads

@@ -15,7 +15,7 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import './i18n/config';
 
 // Simple Protected Route
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const auth = localStorage.getItem('admin_auth');
   return auth ? children : <Navigate to="/admin" replace />;
 };

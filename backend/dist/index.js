@@ -35,7 +35,7 @@ app.post('/api/users', async (req, res) => {
         const existingResult = await (0, dao_1.getResultByUserAndExam)(user.id, examId);
         if (existingResult) {
             if (existingResult.status === 'completed' || existingResult.status === 'expired') {
-                // 考试已完成或过期，返回结果ID用于回顾
+                // 考试已完成或超时自动提交，返回结果ID用于回顾
                 return res.json({
                     id: user.id,
                     name: user.name,
@@ -59,7 +59,7 @@ app.post('/api/users', async (req, res) => {
                 });
             }
             else if (existingResult.status === 'expired') {
-                // 考试已过期，返回结果ID用于查看
+                // 考试已超时自动提交，返回结果ID用于查看
                 return res.json({
                     id: user.id,
                     name: user.name,
@@ -146,7 +146,7 @@ app.get('/api/admin/exams/:examId/questions', async (req, res) => {
 app.get('/api/results/:resultId/questions', async (req, res) => {
     try {
         const resultId = Number(req.params.resultId);
-        // 验证考试是否已完成（包括正常完成和过期完成）
+        // 验证考试是否已完成（包括正常完成和超时自动提交）
         const result = await (0, dao_1.getResultById)(resultId);
         if (!result) {
             return res.status(404).json({ error: 'Result not found' });
@@ -184,7 +184,7 @@ app.post('/api/answers', async (req, res) => {
         if (existingAnswer) {
             return res.status(409).json({ error: 'Question already answered' });
         }
-        // 验证考试会话是否有效（已完成或过期的考试不能再提交答案）
+        // 验证考试会话是否有效（已完成或超时自动提交的考试不能再提交答案）
         const result = await (0, dao_1.getResultById)(resultId);
         if (!result) {
             return res.status(404).json({ error: 'Result not found' });
@@ -260,8 +260,8 @@ app.get('/api/results/:resultId/answers', async (req, res) => {
 app.put('/api/results/:resultId', async (req, res) => {
     try {
         const resultId = Number(req.params.resultId);
-        const { score, totalQuestions, totalDuration } = req.body;
-        // 验证考试会话（已完成或过期的考试不能再提交）
+        const { totalQuestions, totalDuration } = req.body;
+        // 验证考试会话（已完成或超时自动提交的考试不能再提交）
         const result = await (0, dao_1.getResultById)(resultId);
         if (!result) {
             return res.status(404).json({ error: 'Result not found' });
@@ -269,6 +269,9 @@ app.put('/api/results/:resultId', async (req, res) => {
         if (result.status === 'completed' || result.status === 'expired') {
             return res.status(403).json({ error: 'Exam already finished' });
         }
+        // 获取用户的所有答案并计算正确数量（服务端计算，更安全）
+        const answers = await (0, dao_1.getAnswersByResultId)(resultId);
+        const correctCount = answers.filter((a) => a.is_correct === 1).length;
         // 获取考试配置
         const exam = await (0, dao_1.getExamById)(result.exam_id);
         if (!exam) {
@@ -282,34 +285,36 @@ app.put('/api/results/:resultId', async (req, res) => {
             const limitSeconds = exam.time_limit_minutes * 60;
             // 检查是否超时
             if (actualElapsedSeconds > limitSeconds) {
-                // 标记为过期
-                await db_1.default.query('UPDATE results SET status = ?, score = ?, total_questions = ?, total_duration = ?, completed_at = NOW() WHERE id = ?', ['expired', score, totalQuestions, actualElapsedSeconds, resultId]);
+                // 标记为超时自动提交
+                await db_1.default.query('UPDATE results SET status = ?, score = ?, total_questions = ?, total_duration = ?, completed_at = NOW() WHERE id = ?', ['expired', correctCount, totalQuestions, actualElapsedSeconds, resultId]);
                 return res.status(403).json({
                     error: 'Time limit exceeded',
-                    message: '考试时间已到，答卷已自动提交为过期状态',
+                    message: '考试时间已到，答卷已自动提交',
                     status: 'expired'
                 });
             }
             // 使用实际时间而不是前端传来的时间（防止作弊）
             console.log('Updating result stats:', {
                 resultId,
-                score,
+                score: correctCount,
                 totalQuestions,
                 actualDuration: actualElapsedSeconds,
                 frontendDuration: totalDuration
             });
-            await (0, dao_1.updateResultStats)(resultId, score, totalQuestions, actualElapsedSeconds // 使用服务端计算的时间
+            await (0, dao_1.updateResultStats)(resultId, correctCount, // 使用服务端计算的分数
+            totalQuestions, actualElapsedSeconds // 使用服务端计算的时间
             );
         }
         else {
             // 无时间限制，使用前端传来的时间
             console.log('Updating result stats:', {
                 resultId,
-                score,
+                score: correctCount,
                 totalQuestions,
                 totalDuration
             });
-            await (0, dao_1.updateResultStats)(resultId, score, totalQuestions, totalDuration);
+            await (0, dao_1.updateResultStats)(resultId, correctCount, // 使用服务端计算的分数
+            totalQuestions, totalDuration);
         }
         res.json({ success: true });
     }
@@ -323,7 +328,7 @@ app.put('/api/results/:resultId/progress', async (req, res) => {
     try {
         const resultId = Number(req.params.resultId);
         const { currentQuestionIndex } = req.body;
-        // 验证考试会话状态（已完成或过期的考试不能再更新进度）
+        // 验证考试会话状态（已完成或超时自动提交的考试不能再更新进度）
         const result = await (0, dao_1.getResultById)(resultId);
         if (!result) {
             return res.status(404).json({ error: 'Result not found' });
@@ -345,7 +350,7 @@ app.put('/api/results/:resultId/questions/:questionId/progress', async (req, res
         const resultId = Number(req.params.resultId);
         const questionId = Number(req.params.questionId);
         const { status, timeSpent } = req.body;
-        // 验证考试会话状态（已完成或过期的考试不能再更新题目状态）
+        // 验证考试会话状态（已完成或超时自动提交的考试不能再更新题目状态）
         const result = await (0, dao_1.getResultById)(resultId);
         if (!result) {
             return res.status(404).json({ error: 'Result not found' });
@@ -393,7 +398,7 @@ app.get('/api/results/:resultId/time-status', async (req, res) => {
         if (!result) {
             return res.status(404).json({ error: 'Result not found' });
         }
-        // 如果已完成或过期，返回最终状态
+        // 如果已完成或超时自动提交，返回最终状态
         if (result.status === 'completed' || result.status === 'expired') {
             return res.json({
                 status: result.status,
@@ -420,7 +425,7 @@ app.get('/api/results/:resultId/time-status', async (req, res) => {
             const totalSeconds = exam.time_limit_minutes * 60;
             remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
             isExpired = remainingSeconds === 0;
-            // 如果时间已到，自动标记为过期
+            // 如果时间已到，自动标记为超时自动提交
             if (isExpired && result.status === 'in_progress') {
                 await db_1.default.query('UPDATE results SET status = ?, completed_at = NOW(), total_duration = ? WHERE id = ?', ['expired', elapsedSeconds, resultId]);
             }
@@ -443,7 +448,7 @@ app.get('/api/results/:resultId/time-status', async (req, res) => {
 app.get('/api/results/:resultId/details', async (req, res) => {
     try {
         const resultId = Number(req.params.resultId);
-        // 验证考试是否已完成（包括正常完成和过期完成）
+        // 验证考试是否已完成（包括正常完成和超时自动提交）
         const result = await (0, dao_1.getResultById)(resultId);
         if (!result) {
             return res.status(404).json({ error: 'Result not found' });
@@ -665,6 +670,121 @@ app.get('/api/admin/exams/:examId/stats', async (req, res) => {
     catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+// 13. Export Exam Results to CSV
+app.get('/api/exams/:examId/export-csv', async (req, res) => {
+    try {
+        const examId = Number(req.params.examId);
+        // 获取考卷信息
+        const exam = await (0, dao_1.getExamById)(examId);
+        if (!exam) {
+            return res.status(404).json({ error: 'Exam not found' });
+        }
+        // 获取所有考试记录
+        const results = await (0, dao_1.getResultsByExamId)(examId);
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'No exam results found' });
+        }
+        // 对已完成的考试进行排名：按分数降序，分数相同时按用时升序
+        const rankedResults = results
+            .filter(r => r.status === 'completed' || r.status === 'expired')
+            .sort((a, b) => {
+            // 首先按分数降序
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            // 分数相同时按用时升序（用时少的排前面）
+            return a.total_duration - b.total_duration;
+        })
+            .map((result, index) => ({
+            ...result,
+            rank: index + 1
+        }));
+        // 创建一个 Map 用于快速查找排名
+        const rankMap = new Map(rankedResults.map(r => [r.id, r.rank]));
+        // 准备 CSV 数据
+        const csvRows = [];
+        // CSV 表头（支持 UTF-8 BOM 以便在 Excel 中正确显示中文）
+        csvRows.push('\uFEFF排名,用户名,用户ID,状态,分数,用时(秒),开始时间,完成时间');
+        // 按排名顺序输出（已完成和超时自动提交的记录排在前面，进行中的排在后面）
+        const sortedResults = [
+            ...rankedResults.sort((a, b) => a.rank - b.rank), // 按排名排序
+            ...results.filter(r => r.status === 'in_progress') // 进行中的记录
+        ];
+        // 添加数据行
+        sortedResults.forEach(result => {
+            const rank = rankMap.get(result.id) || '-';
+            const statusMap = {
+                'completed': '已完成',
+                'in_progress': '进行中',
+                'expired': '超时自动提交'
+            };
+            const status = statusMap[result.status] || result.status;
+            // 计算满分100的分数，保留一位小数
+            const score = (result.status === 'completed' || result.status === 'expired')
+                ? (() => {
+                    const totalQuestions = Number(result.total_questions);
+                    const correctCount = Number(result.score);
+                    if (!Number.isFinite(totalQuestions) || totalQuestions <= 0)
+                        return '-';
+                    if (!Number.isFinite(correctCount))
+                        return '-';
+                    const score100 = (correctCount / totalQuestions) * 100;
+                    return Number.isNaN(score100) ? '-' : score100.toFixed(1);
+                })()
+                : '-';
+            const duration = result.total_duration > 0 ? result.total_duration : '-';
+            const startedAt = new Date(result.started_at).toLocaleString('zh-CN', {
+                timeZone: 'Asia/Shanghai',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const completedAt = result.completed_at
+                ? new Date(result.completed_at).toLocaleString('zh-CN', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                })
+                : '-';
+            // 处理可能包含逗号的字段（用引号包裹）
+            const escapeCsvValue = (value) => {
+                const str = String(value);
+                if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                    return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+            };
+            csvRows.push([
+                rank,
+                escapeCsvValue(result.user_name),
+                result.user_id,
+                status,
+                score,
+                duration,
+                startedAt,
+                completedAt
+            ].join(','));
+        });
+        const csvContent = csvRows.join('\n');
+        // 设置响应头，提示浏览器下载文件
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        const filename = `exam_results_${examId}_${timestamp}.csv`;
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+        res.send(csvContent);
+    }
+    catch (error) {
+        console.error('Error exporting CSV:', error);
+        res.status(500).json({ error: 'Failed to export CSV' });
     }
 });
 const PORT = Number(process.env.PORT) || 3000;

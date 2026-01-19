@@ -1,7 +1,8 @@
 // API配置
 export const API_CONFIG = {
   // 根据环境变量或开发/生产环境设置API基础URL
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+  // 允许为空字符串（用于相对路径），只有 undefined 时才使用默认值
+  BASE_URL: import.meta.env.VITE_API_BASE_URL !== undefined ? import.meta.env.VITE_API_BASE_URL : 'http://localhost:3000',
   
   // 前端应用地址
   FRONTEND_URL: import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173',
@@ -26,6 +27,7 @@ export const API_CONFIG = {
     DELETE_EXAM_RESULTS: (examId: number) => `/api/exams/${examId}/results`,
     EXAM_STATS: (examId: number) => `/api/admin/exams/${examId}/stats`,
     EXAM_QUESTIONS_BATCH: (examId: number) => `/api/exams/${examId}/questions/batch`,
+    EXPORT_EXAM_CSV: (examId: number) => `/api/exams/${examId}/export-csv`,
     
     // 题目相关
     QUESTIONS: '/api/questions',
@@ -92,7 +94,8 @@ export const apiUrls = {
   // 考试记录管理
   getExamResults: (examId: number) => buildApiUrl(API_CONFIG.ENDPOINTS.EXAM_RESULTS(examId)),
   deleteResult: (resultId: number) => buildApiUrl(API_CONFIG.ENDPOINTS.DELETE_RESULT(resultId)),
-  deleteExamResults: (examId: number) => buildApiUrl(API_CONFIG.ENDPOINTS.DELETE_EXAM_RESULTS(examId))
+  deleteExamResults: (examId: number) => buildApiUrl(API_CONFIG.ENDPOINTS.DELETE_EXAM_RESULTS(examId)),
+  exportExamCsv: (examId: number) => buildApiUrl(API_CONFIG.ENDPOINTS.EXPORT_EXAM_CSV(examId))
 };
 
 // 构建分享链接

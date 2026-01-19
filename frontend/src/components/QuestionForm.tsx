@@ -17,25 +17,39 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
   const [type, setType] = useState<'CHOICE' | 'TRUE_FALSE'>(
     editingQuestion?.type || 'CHOICE'
   );
-  const [content, setContent] = useState(editingQuestion?.content || '');
+  
+  // Helper to extract string content from potentially bilingual fields
+  const getStringValue = (val: string | { [key: string]: string } | undefined): string => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    return val['zh-CN'] || Object.values(val)[0] || '';
+  };
+  
+  const getOptionsValue = (val: string[] | { [key: string]: string[] } | undefined): string[] => {
+    if (!val) return ['', '', '', ''];
+    if (Array.isArray(val)) return val;
+    return val['zh-CN'] || Object.values(val)[0] || ['', '', '', ''];
+  };
+
+  const [content, setContent] = useState<string>(getStringValue(editingQuestion?.content));
   const [options, setOptions] = useState<string[]>(
-    editingQuestion?.options || ['', '', '', '']
+    getOptionsValue(editingQuestion?.options)
   );
-  const [correctAnswer, setCorrectAnswer] = useState(
-    editingQuestion?.correct_answer || ''
+  const [correctAnswer, setCorrectAnswer] = useState<string>(
+    getStringValue(editingQuestion?.correct_answer)
   );
-  const [explanation, setExplanation] = useState(
-    editingQuestion?.explanation || ''
+  const [explanation, setExplanation] = useState<string>(
+    getStringValue(editingQuestion?.explanation)
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (editingQuestion) {
       setType(editingQuestion.type);
-      setContent(editingQuestion.content);
-      setOptions(editingQuestion.options);
-      setCorrectAnswer(editingQuestion.correct_answer);
-      setExplanation(editingQuestion.explanation || '');
+      setContent(getStringValue(editingQuestion.content));
+      setOptions(getOptionsValue(editingQuestion.options));
+      setCorrectAnswer(getStringValue(editingQuestion.correct_answer));
+      setExplanation(getStringValue(editingQuestion.explanation));
     }
   }, [editingQuestion]);
 

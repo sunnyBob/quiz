@@ -11,6 +11,7 @@ services:
       MYSQL_DATABASE: quiz_db
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+      TZ: ${TZ:-UTC}
     volumes:
       - quiz-mysql-data:/var/lib/mysql
       # 初始化脚本（可选）
@@ -44,6 +45,7 @@ services:
       DB_NAME: quiz_db
       PORT: 3000
       NODE_ENV: production
+      TZ: ${TZ:-UTC}
     depends_on:
       mysql:
         condition: service_healthy
@@ -69,12 +71,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+        VITE_API_BASE_URL: ""
         VITE_ADMIN_PASSWORD: ${VITE_ADMIN_PASSWORD:-Admin@Quiz2026}
     container_name: quiz-frontend
     restart: always
     ports:
-      - "5173:80"
+      - "8080:80"
     depends_on:
       - backend
     networks:
@@ -90,24 +92,39 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Cloudflare Tunnel 服务
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: quiz-cloudflared
-    restart: always
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
-    networks:
-      - quiz-network
-    depends_on:
-      - frontend
-      - backend
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # Ngrok 服务 (已禁用，使用 DDNS 方式部署)
+  # ngrok:
+  #   image: ngrok/ngrok:latest
+  #   container_name: quiz-ngrok
+  #   restart: always
+  #   environment:
+  #     NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+  #   command: http frontend:80
+  #   ports:
+  #     - "4040:4040"
+  #   networks:
+  #     - quiz-network
+  #   depends_on:
+  #     - frontend
+
+  # Cloudflare Tunnel 服务 (已禁用，如果需要请取消注释并注释掉 ngrok)
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: quiz-cloudflared
+  #   restart: always
+  #   command: tunnel --no-autoupdate run
+  #   environment:
+  #     - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+  #   networks:
+  #     - quiz-network
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
 
 networks:
   quiz-network:
@@ -119,16 +136,23 @@ volumes:
     driver_opts:
       type: none
       o: bind
+      # 请根据你的服务器环境修改此路径
+      # 示例路径:
+      # - Ubuntu/Debian: /data/quiz/mysql
+      # - Synology NAS: /volume1/docker/quiz/mysql
+      # - 其他: /your/custom/path/mysql
       device: /volume1/docker/quiz/mysql
   quiz-backend-data:
     driver: local
     driver_opts:
       type: none
       o: bind
+      # 请根据你的服务器环境修改此路径
       device: /volume1/docker/quiz/backend
   quiz-uploads:
     driver: local
     driver_opts:
       type: none
       o: bind
+      # 请根据你的服务器环境修改此路径
       device: /volume1/docker/quiz/uploads

@@ -44,7 +44,7 @@ const QuizPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { notifications, removeNotification, showError, showWarning } = useNotification();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const { userId, resultId, examId } = location.state || {};
 
@@ -97,7 +97,7 @@ const QuizPage: React.FC = () => {
 
   useEffect(() => {
     if (!resultId || !examId) {
-      showError('会话无效，请重新开始');
+      showError(t('quiz.sessionInvalid', '会话无效，请重新开始'));
       navigate(`/quiz/${shareId}`);
       return;
     }
@@ -115,7 +115,7 @@ const QuizPage: React.FC = () => {
           
           const currentLang = i18n.language || 'zh-CN';
           const isZh = currentLang.startsWith('zh');
-          showWarning(isZh ? '此考试已完成，正在跳转到成绩页面...' : 'This exam is completed, redirecting to summary...', 3000);
+          showWarning(t('quiz.examCompleted'), 3000);
           
           // 延迟一点时间让用户看到提示
           setTimeout(() => {
@@ -275,12 +275,10 @@ const QuizPage: React.FC = () => {
         await updateQuestionStatus(currentQ.id, 'answered', 0);
     } catch (err: any) {
         console.error("Failed to save answer", err);
-        const currentLang = i18n.language || 'zh-CN';
-        const isZh = currentLang.startsWith('zh');
         if (err.response?.status === 409) {
-            showWarning(isZh ? '此题已经回答过了' : 'This question has already been answered');
+            showWarning(t('quiz.alreadyAnswered'));
         } else {
-            showError(isZh ? '提交答案失败，请重试' : 'Failed to submit answer, please try again');
+            showError(t('quiz.submitFailed'));
         }
     }
   };
@@ -300,7 +298,7 @@ const QuizPage: React.FC = () => {
   };
 
   const handleTimeWarning = (minutesLeft: number) => {
-    const warning = `⚠️ 剩余时间：${minutesLeft} 分钟`;
+    const warning = t('quiz.timeWarning', { minutes: minutesLeft });
     setTimeWarnings(prev => [...prev, warning]);
 
     // Auto-dismiss warning after 5 seconds
@@ -314,9 +312,7 @@ const QuizPage: React.FC = () => {
     if (!isAutoSubmittingRef.current) {
       isAutoSubmittingRef.current = true;
       setIsTimeExpired(true);
-      const currentLang = i18n.language || 'zh-CN';
-      const isZh = currentLang.startsWith('zh');
-      showWarning(isZh ? '⏰ 考试时间已到，正在自动提交答卷...' : '⏰ Time is up, auto-submitting...', 5000);
+      showWarning(t('quiz.autoSubmitting'), 5000);
     }
     
     // 停止计时器
@@ -328,9 +324,7 @@ const QuizPage: React.FC = () => {
       await handleSubmitQuiz();
     } catch (error) {
       console.error('Auto-submit failed:', error);
-      const currentLang = i18n.language || 'zh-CN';
-      const isZh = currentLang.startsWith('zh');
-      showError(isZh ? '自动提交失败，请手动提交' : 'Auto-submit failed, please submit manually');
+      showError(t('quiz.autoSubmitFailed'));
     }
   };
 
@@ -407,13 +401,12 @@ const QuizPage: React.FC = () => {
       
       const currentLang = i18n.language || 'zh-CN';
       const isZh = currentLang.startsWith('zh');
+      const numbers = unansweredQuestions.join(isZh ? '、' : ', ');
       
       // Show confirmation dialog
       setConfirmDialogData({
-        title: isZh ? '还有题目未作答' : 'Unanswered Questions',
-        message: isZh 
-          ? `您还有 ${unansweredCount} 道题未作答\n\n未作答题号：${unansweredQuestions.join('、')}\n\n确定要提交答卷吗？未作答的题目将不得分。`
-          : `You have ${unansweredCount} unanswered question${unansweredCount > 1 ? 's' : ''}\n\nUnanswered question numbers: ${unansweredQuestions.join(', ')}\n\nAre you sure you want to submit? Unanswered questions will not receive points.`,
+        title: t('quiz.unansweredTitle'),
+        message: t('quiz.unansweredMessage', { count: unansweredCount, numbers }),
         unansweredCount
       });
       setShowConfirmDialog(true);
@@ -442,15 +435,12 @@ const QuizPage: React.FC = () => {
     } catch (err: any) {
       console.error("Failed to submit result", err);
       
-      const currentLang = i18n.language || 'zh-CN';
-      const isZh = currentLang.startsWith('zh');
-      
       // 如果是403错误，说明考试已完成或过期，直接跳转到summary
       if (err.response?.status === 403) {
         // 考试已完成，静默跳转到成绩页面
         navigate(`/exam/${shareId}/summary/${resultId}`);
       } else {
-        showError(isZh ? '提交结果失败，请重试' : 'Failed to submit result, please try again');
+        showError(t('quiz.submitFailed'));
       }
     }
   };
@@ -460,7 +450,7 @@ const QuizPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">正在加载考试内容...</p>
+          <p className="text-gray-600">{t('quiz.loadingExam')}</p>
         </div>
       </div>
     );
@@ -471,8 +461,8 @@ const QuizPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">📝</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">暂无考试题目</h2>
-          <p className="text-gray-600">请联系管理员添加题目</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('quiz.noQuestions')}</h2>
+          <p className="text-gray-600">{t('quiz.contactAdmin')}</p>
         </div>
       </div>
     );
@@ -596,11 +586,10 @@ const QuizPage: React.FC = () => {
                       : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
                   }`}
                   title={(() => {
-                    const isZh = (i18n.language || 'zh-CN').startsWith('zh');
                     const isFlagged = questionStatuses.find(s => s.id === currentQ.id)?.status === 'flagged';
                     return isFlagged 
-                      ? (isZh ? '点击取消标记' : 'Click to unflag')
-                      : (isZh ? '标记此题供稍后复查' : 'Flag for later review');
+                      ? t('quiz.unflagQuestion')
+                      : t('quiz.flagQuestion');
                   })()}
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -668,10 +657,10 @@ const QuizPage: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold mb-1 text-blue-900">
-                    已提交答案
+                    {t('quiz.answerSubmitted')}
                   </h3>
                   <p className="text-sm text-blue-800">
-                    您的答案：{currentAnswer.user_answer}
+                    {t('quiz.yourAnswer')}：{currentAnswer.user_answer}
                   </p>
                 </div>
               </div>
@@ -682,14 +671,14 @@ const QuizPage: React.FC = () => {
           <div className="flex justify-between items-center pt-6 border-t border-gray-200">
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500">
-                题目 {currentQIndex + 1} / {questions.length}
+                {t('quiz.question')} {currentQIndex + 1} / {questions.length}
               </div>
               {currentQIndex > 0 && (
                 <button
                   onClick={() => handleQuestionNavigation(currentQIndex - 1)}
                   className="btn-secondary text-sm"
                 >
-                  上一题
+                  {t('quiz.previousQuestion')}
                 </button>
               )}
             </div>
@@ -700,14 +689,14 @@ const QuizPage: React.FC = () => {
             >
               {currentQIndex === questions.length - 1 ? (
                 <div className="flex items-center">
-                  <span>提交答卷</span>
+                  <span>{t('quiz.submitAnswer')}</span>
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               ) : (
                 <div className="flex items-center">
-                  <span>下一题</span>
+                  <span>{t('quiz.nextQuestion')}</span>
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>

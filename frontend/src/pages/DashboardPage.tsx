@@ -63,12 +63,62 @@ const DashboardPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await axios.get(apiUrls.getExamStats(selectedExam.id));
-      setStats(res.data);
+      // 按排名排序：先按分数降序，分数相同时按完成时间升序（早完成的在前）
+      const sortedStats = res.data.sort((a: ResultStat, b: ResultStat) => {
+        const percentageA = a.total_questions > 0 ? (a.score / a.total_questions) * 100 : 0;
+        const percentageB = b.total_questions > 0 ? (b.score / b.total_questions) * 100 : 0;
+        
+        // 先按百分比分数降序
+        if (percentageB !== percentageA) {
+          return percentageB - percentageA;
+        }
+        
+        // 分数相同时，按完成时间升序（早完成的排前面）
+        return new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime();
+      });
+      setStats(sortedStats);
     } catch (err) {
       console.error("Failed to fetch stats", err);
       setStats([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    if (!selectedExam) return;
+    
+    try {
+      // 使用 axios 下载文件
+      const response = await axios.get(apiUrls.exportExamCsv(selectedExam.id), {
+        responseType: 'blob' // 重要：告诉 axios 返回二进制数据
+      });
+      
+      // 创建一个临时的 URL 用于下载
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // 从响应头获取文件名，或使用默认名称
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `exam_results_${selectedExam.id}.csv`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+        if (filenameMatch) {
+          filename = decodeURIComponent(filenameMatch[1]);
+        }
+      }
+      
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      
+      // 清理
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+      alert('导出失败，请稍后重试');
     }
   };
 
@@ -100,12 +150,32 @@ const DashboardPage: React.FC = () => {
 
   // Calculate summary stats
   const totalParticipants = stats.length;
+  
+  // 计算平均分，处理 NaN 情况（满分100，保留一位小数）
   const averageScore = totalParticipants > 0
-    ? Math.round(stats.reduce((sum, stat) => sum + (stat.score / stat.total_questions * 100), 0) / totalParticipants)
-    : 0;
+    ? (() => {
+        const validScores = stats.filter(stat => stat.total_questions > 0);
+        if (validScores.length === 0) return '0.0';
+        const sum = validScores.reduce((acc, stat) => acc + ((stat.score / stat.total_questions) * 100), 0);
+        const avg = sum / validScores.length;
+        return isNaN(avg) ? '0.0' : avg.toFixed(1);
+      })()
+    : '0.0';
+  
+  // 计算及格率，处理 NaN 情况
   const passRate = totalParticipants > 0
-    ? Math.round(stats.filter(stat => (stat.score / stat.total_questions * 100) >= 60).length / totalParticipants * 100)
+    ? (() => {
+        const validStats = stats.filter(stat => stat.total_questions > 0);
+        if (validStats.length === 0) return 0;
+        const passedCount = validStats.filter(stat => {
+          const percentage = (stat.score / stat.total_questions * 100);
+          return !isNaN(percentage) && percentage >= 60;
+        }).length;
+        const rate = Math.round(passedCount / validStats.length * 100);
+        return isNaN(rate) ? 0 : rate;
+      })()
     : 0;
+  
   const averageTime = totalParticipants > 0
     ? Math.round(stats.reduce((sum, stat) => sum + stat.total_duration, 0) / totalParticipants)
     : 0;
@@ -259,7 +329,7 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">平均分</p>
-                <p className="text-2xl font-semibold text-gray-900">{averageScore}%</p>
+                <p className="text-2xl font-semibold text-gray-900">{averageScore}</p>
               </div>
             </div>
           </div>
@@ -301,11 +371,25 @@ const DashboardPage: React.FC = () => {
         <div className="card">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">详细成绩</h3>
-            {selectedExam && (
-              <div className="text-sm text-gray-500">
-                {selectedExam.title} (ID: {selectedExam.id})
-              </div>
-            )}
+            <div className="flex items-center space-x-3">
+              {selectedExam && stats.length > 0 && (
+                <button
+                  onClick={handleExportCSV}
+                  className="btn-secondary flex items-center space-x-2"
+                  title="导出 CSV"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>导出 CSV</span>
+                </button>
+              )}
+              {selectedExam && (
+                <div className="text-sm text-gray-500">
+                  {selectedExam.title} (ID: {selectedExam.id})
+                </div>
+              )}
+            </div>
           </div>
 
           {loadingExams ? (
@@ -342,13 +426,13 @@ const DashboardPage: React.FC = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      排名
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       考生姓名
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      得分
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      正确率
+                      分数
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       用时
@@ -362,12 +446,42 @@ const DashboardPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {stats.map((stat) => {
-                    const percentage = Math.round((stat.score / stat.total_questions) * 100);
-                    const isPass = percentage >= 60;
+                  {stats.map((stat, index) => {
+                    // 处理 NaN 情况，计算满分100的分数
+                    const score100 = stat.total_questions > 0 
+                      ? ((stat.score / stat.total_questions) * 100)
+                      : 0;
+                    const displayScore = isNaN(score100) ? '0.0' : score100.toFixed(1);
+                    const isPass = !isNaN(score100) && score100 >= 60;
+                    const rank = index + 1;
 
                     return (
-                      <tr key={stat.id} className="hover:bg-gray-50">
+                      <tr key={stat.id} className={`hover:bg-gray-50 ${rank <= 3 ? 'bg-yellow-50/30' : ''}`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {rank <= 3 ? (
+                            <div className="flex items-center">
+                              {rank === 1 && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-md">
+                                  🏆 {rank}
+                                </span>
+                              )}
+                              {rank === 2 && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-gray-300 to-gray-400 text-white shadow-md">
+                                  🥈 {rank}
+                                </span>
+                              )}
+                              {rank === 3 && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-md">
+                                  🥉 {rank}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm font-medium text-gray-600">
+                              {rank}
+                            </span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center">
@@ -382,17 +496,12 @@ const DashboardPage: React.FC = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {stat.score} / {stat.total_questions}
-                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            isPass
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                          <div className={`text-lg font-bold ${
+                            isPass ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            {percentage}%
-                          </span>
+                            {displayScore}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                           {formatTime(stat.total_duration)}

@@ -532,4 +532,3 @@ export const getResultByUserAndExam = async (
   );
   return (rows[0] as Result) || null;
 };
-

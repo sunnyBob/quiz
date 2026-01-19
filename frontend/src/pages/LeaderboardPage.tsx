@@ -68,8 +68,9 @@ const LeaderboardPage: React.FC = () => {
   };
 
   const calculateScore100 = (score: number, total: number) => {
-    if (!total || total === 0) return 0;
-    return Math.round((score / total) * 100);
+    if (!total || total === 0) return '0.0';
+    const result = (score / total) * 100;
+    return isNaN(result) ? '0.0' : result.toFixed(1);
   };
 
   const getRankBadge = (rank: number) => {
@@ -146,8 +147,12 @@ const LeaderboardPage: React.FC = () => {
                   <p className="text-sm text-gray-600">平均分</p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     {(() => {
-                      const avg = Math.round(results.reduce((sum, r) => sum + calculateScore100(r.score, r.total_questions), 0) / results.length);
-                      return isNaN(avg) ? 0 : avg;
+                      const sum = results.reduce((acc, r) => {
+                        const score = parseFloat(calculateScore100(r.score, r.total_questions));
+                        return acc + (isNaN(score) ? 0 : score);
+                      }, 0);
+                      const avg = sum / results.length;
+                      return isNaN(avg) ? '0.0' : avg.toFixed(1);
                     })()}
                   </p>
                 </div>
@@ -221,7 +226,7 @@ const LeaderboardPage: React.FC = () => {
                             ? 'text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent'
                             : 'text-xl text-gray-900'
                         }`}>
-                          {isNaN(score100) ? 0 : score100}
+                          {score100}
                         </div>
                         <div className="text-xs text-gray-500 mt-0.5">分</div>
                       </div>

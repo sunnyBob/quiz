@@ -121,7 +121,7 @@ const ExamRecordsPage: React.FC = () => {
     switch (status) {
       case 'completed': return '已完成';
       case 'in_progress': return '进行中';
-      case 'expired': return '已过期';
+      case 'expired': return '超时自动提交';
       default: return status;
     }
   };
@@ -195,8 +195,14 @@ const ExamRecordsPage: React.FC = () => {
 
   const completedResults = results.filter(r => r.status === 'completed');
   const averageScore = completedResults.length > 0
-    ? Math.round(completedResults.reduce((sum, r) => sum + (r.score / r.total_questions * 100), 0) / completedResults.length)
-    : 0;
+    ? (() => {
+        const validResults = completedResults.filter(r => r.total_questions > 0);
+        if (validResults.length === 0) return '0.0';
+        const sum = validResults.reduce((acc, r) => acc + ((r.score / r.total_questions) * 100), 0);
+        const avg = sum / validResults.length;
+        return isNaN(avg) ? '0.0' : avg.toFixed(1);
+      })()
+    : '0.0';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -206,10 +212,7 @@ const ExamRecordsPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => {
-                  const isAdmin = localStorage.getItem('admin_auth');
-                  navigate(isAdmin ? '/admin' : '/');
-                }}
+                onClick={() => navigate(-1)}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 title="返回"
               >
@@ -228,15 +231,17 @@ const ExamRecordsPage: React.FC = () => {
             </div>
 
             {isAdmin && results.length > 0 && (
-              <button
-                onClick={handleBatchDelete}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                <span>清空所有记录</span>
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleBatchDelete}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>清空所有记录</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -248,14 +253,14 @@ const ExamRecordsPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="text-2xl font-bold text-blue-600">{results.length}</div>
-            <div className="text-gray-600">总考试次数</div>
+            <div className="text-gray-600">总考试人数</div>
           </div>
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="text-2xl font-bold text-green-600">{completedResults.length}</div>
-            <div className="text-gray-600">已完成次数</div>
+            <div className="text-gray-600">已完成人数</div>
           </div>
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="text-2xl font-bold text-purple-600">{averageScore}%</div>
+            <div className="text-2xl font-bold text-purple-600">{averageScore}</div>
             <div className="text-gray-600">平均分数</div>
           </div>
           <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -309,7 +314,7 @@ const ExamRecordsPage: React.FC = () => {
                   <option value="all">所有状态</option>
                   <option value="completed">已完成</option>
                   <option value="in_progress">进行中</option>
-                  <option value="expired">已过期</option>
+                  <option value="expired">超时自动提交</option>
                 </select>
               </div>
             </div>
@@ -391,14 +396,13 @@ const ExamRecordsPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {result.status === 'completed' ? (
-                          <div>
-                            <div className="font-medium">
-                              {result.score}/{result.total_questions}
-                            </div>
-                            <div className="text-gray-500">
-                              {Math.round((result.score / result.total_questions) * 100)}%
-                            </div>
+                        {result.status === 'completed' || result.status === 'expired' ? (
+                          <div className="font-medium">
+                            {(() => {
+                              if (result.total_questions === 0) return '0.0';
+                              const score100 = (result.score / result.total_questions) * 100;
+                              return isNaN(score100) ? '0.0' : score100.toFixed(1);
+                            })()}
                           </div>
                         ) : (
                           <span className="text-gray-400">-</span>

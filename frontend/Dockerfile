@@ -6,8 +6,8 @@ WORKDIR /app
 # 复制 package 文件
 COPY package*.json ./
 
-# 安装依赖
-RUN npm ci
+# 安装依赖 (使用 npm install 以解决跨平台构建时的 optional dependencies 问题)
+RUN npm install
 
 # 复制源代码
 COPY . .

@@ -24,8 +24,8 @@ const ExamTimer: React.FC<ExamTimerProps> = ({
     }
     return timeLimitMinutes * 60;
   });
-  const [isActive, setIsActive] = useState(true); // 直接激活
-  const [warningsShown, setWarningsShown] = useState<Set<number>>(new Set());
+  // const [isActive, setIsActive] = useState(true); // Always active
+  const warningsShownRef = useRef<Set<number>>(new Set());
 
   // 当服务器时间首次到达时，更新倒计时
   useEffect(() => {
@@ -65,7 +65,7 @@ const ExamTimer: React.FC<ExamTimerProps> = ({
 
   useEffect(() => {
     // 只在组件挂载时创建一次 interval
-    if (!isActive || timeLimitMinutes <= 0) {
+    if (timeLimitMinutes <= 0) {
       return;
     }
 
@@ -74,7 +74,7 @@ const ExamTimer: React.FC<ExamTimerProps> = ({
     const interval = setInterval(() => {
       setTimeLeft(prevTime => {
         const newTime = prevTime - 1;
-        console.log('Timer tick:', newTime);
+        // console.log('Timer tick:', newTime);
 
         // Check for warnings - 只在整分钟时触发
         const minutesLeft = Math.floor(newTime / 60);
@@ -84,14 +84,11 @@ const ExamTimer: React.FC<ExamTimerProps> = ({
           const warningTimes = [10, 5, 1]; // Minutes
           
           if (warningTimes.includes(minutesLeft)) {
-            setWarningsShown(prev => {
-              if (!prev.has(minutesLeft)) {
+             if (!warningsShownRef.current.has(minutesLeft)) {
                 console.log('Triggering warning for', minutesLeft, 'minutes');
                 onTimeWarning?.(minutesLeft);
-                return new Set(prev).add(minutesLeft);
-              }
-              return prev;
-            });
+                warningsShownRef.current.add(minutesLeft);
+             }
           }
         }
 
