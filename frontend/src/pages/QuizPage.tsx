@@ -267,7 +267,7 @@ const QuizPage: React.FC = () => {
 
     try {
         // 提交答案到服务端（不返回正确答案）
-        const response = await axios.post(apiUrls.saveAnswer(), {
+        await axios.post(apiUrls.saveAnswer(), {
             resultId,
             questionId: currentQ.id,
             userAnswer: option,
@@ -284,11 +284,6 @@ const QuizPage: React.FC = () => {
 
         // Update question status to answered
         await updateQuestionStatus(currentQ.id, 'answered', 0);
-        
-        // 显示提示信息
-        if (response.data.isUpdate) {
-            showWarning(t('quiz.answerUpdated', '答案已更新'));
-        }
     } catch (err: any) {
         console.error("Failed to save answer", err);
         if (err.response?.status === 403) {
