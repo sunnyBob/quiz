@@ -258,13 +258,65 @@ app.post('/api/answers', async (req, res) => {
       else {
         if (typeof q.correct_answer === 'string') {
           validAnswers.push(q.correct_answer);
+          
+          // 特殊处理判断题: 添加所有可能的等价答案格式
+          if (q.type === 'TRUE_FALSE') {
+            const answer = q.correct_answer.toLowerCase();
+            if (answer === 'true' || answer === '正确') {
+              validAnswers.push('true', 'True', '正确');
+            } else if (answer === 'false' || answer === '错误') {
+              validAnswers.push('false', 'False', '错误');
+            }
+          }
         } else if (typeof q.correct_answer === 'object' && q.correct_answer !== null) {
           // 如果正确答案也是多语言对象，添加所有语言版本
           validAnswers.push(...(Object.values(q.correct_answer) as string[]));
         }
+        
+        // 对于判断题，还需要检查选项中的对应答案
+        if (q.type === 'TRUE_FALSE') {
+          // 从所有语言的选项中提取对应的答案
+          if (Array.isArray(q.options)) {
+            // 单语言格式: ["正确", "错误"]
+            q.options.forEach((opt: string) => {
+              if (!validAnswers.includes(opt)) {
+                // 检查这个选项是否匹配已知的正确答案
+                const optLower = opt.toLowerCase();
+                const hasMatch = validAnswers.some(va => {
+                  const vaLower = va.toLowerCase();
+                  return (vaLower === 'true' && optLower === '正确') ||
+                         (vaLower === '正确' && optLower === 'true') ||
+                         (vaLower === 'false' && optLower === '错误') ||
+                         (vaLower === '错误' && optLower === 'false');
+                });
+                if (hasMatch) validAnswers.push(opt);
+              }
+            });
+          } else if (typeof q.options === 'object' && q.options !== null) {
+            // 多语言格式: { "zh-CN": ["正确", "错误"], "en-US": ["True", "False"] }
+            Object.values(q.options).forEach((opts: any) => {
+              if (Array.isArray(opts)) {
+                opts.forEach((opt: string) => {
+                  if (!validAnswers.includes(opt)) {
+                    const optLower = opt.toLowerCase();
+                    const hasMatch = validAnswers.some(va => {
+                      const vaLower = va.toLowerCase();
+                      return (vaLower === 'true' && optLower === '正确') ||
+                             (vaLower === '正确' && optLower === 'true') ||
+                             (vaLower === 'false' && optLower === '错误') ||
+                             (vaLower === '错误' && optLower === 'false');
+                    });
+                    if (hasMatch) validAnswers.push(opt);
+                  }
+                });
+              }
+            });
+          }
+        }
       }
       
-      return validAnswers;
+      // 去重
+      return Array.from(new Set(validAnswers));
     };
     
     const validAnswers = getValidAnswers(question);
