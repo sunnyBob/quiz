@@ -69,11 +69,15 @@ const ExamManagementPage: React.FC = () => {
 
   const handleCopyShareLink = (shareId: string) => {
     const shareUrl = buildShareUrl(shareId);
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      showSuccess('分享链接已复制到剪贴板！');
-    }).catch(() => {
-      showError('复制失败，请手动复制链接');
-    });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showSuccess('分享链接已复制到剪贴板！');
+      }).catch(() => {
+        showError('复制失败，请手动复制链接');
+      });
+    } else {
+      showError('您的浏览器不支持剪贴板功能，请使用 HTTPS 访问');
+    }
   };
 
   const confirmDelete = async () => {

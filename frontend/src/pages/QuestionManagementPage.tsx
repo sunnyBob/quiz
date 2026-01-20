@@ -269,8 +269,12 @@ const QuestionManagementPage: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(JSON.stringify(getDisplayJson(), null, 2));
-                      showSuccess('已复制到剪贴板');
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(JSON.stringify(getDisplayJson(), null, 2));
+                        showSuccess('已复制到剪贴板');
+                      } else {
+                        showError('您的浏览器不支持剪贴板功能，请使用 HTTPS 访问或手动复制');
+                      }
                     }}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
                   >
