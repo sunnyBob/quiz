@@ -254,7 +254,7 @@ const QuizPage: React.FC = () => {
       if (totalTimerRef.current) clearInterval(totalTimerRef.current);
       if (serverSyncTimerRef.current) clearInterval(serverSyncTimerRef.current);
     };
-  }, [examId, resultId, shareId, navigate]);
+  }, [examId, resultId, shareId, navigate, t, showError, showWarning]);
 
   const handleAnswer = async (option: string) => {
     const currentQ = questions[currentQIndex];

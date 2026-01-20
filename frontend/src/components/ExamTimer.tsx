@@ -64,7 +64,7 @@ const ExamTimer: React.FC<ExamTimerProps> = ({
   // 不需要额外的初始化 useEffect，useState 已经处理了初始值
 
   useEffect(() => {
-    // 只在组件挂载时创建一次 interval
+    // 只在有时间限制时创建计时器
     if (timeLimitMinutes <= 0) {
       return;
     }
@@ -107,7 +107,7 @@ const ExamTimer: React.FC<ExamTimerProps> = ({
       console.log('ExamTimer: Clearing interval on unmount');
       clearInterval(interval);
     };
-  }, []); // 空依赖数组，只在挂载时运行一次
+  }, [timeLimitMinutes, onTimeUp, onTimeWarning]); // 添加必要的依赖
 
   // Don't render if no time limit is set
   if (timeLimitMinutes <= 0) {
