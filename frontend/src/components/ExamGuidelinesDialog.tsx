@@ -83,22 +83,6 @@ const ExamGuidelinesDialog: React.FC<ExamGuidelinesDialogProps> = ({
             </div>
 
             <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-              <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-base font-bold text-gray-900 mb-1">
-                  {t('guidelines.rule4.title')}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {t('guidelines.rule4.desc')}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
